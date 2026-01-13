@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fill in the Blank Review Helper - Interactive web tool for studying with hidden answers">
+    <title>Fill in the Blank Review Helper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fill in the Blank Review Helper</h1>
+            <p class="subtitle">Paste text with answers in parentheses and test yourself!</p>
+        </header>
+        
+        <div class="instructions">
+            <p><strong>Instructions:</strong></p>
+            <ul>
+                <li>Paste text with answers in parentheses (English () or Chinese （）)</li>
+                <li>Click once on a blank to see the first character as a hint</li>
+                <li>Click again to see the full answer</li>
+                <li>Click a third time to reset to blank</li>
+            </ul>
+        </div>
+        
+        <div class="input-section">
+            <textarea id="textInput" placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)' or 'The capital of Japan is （Tokyo）'"></textarea>
+            <button id="processBtn" class="btn-primary">Process Text</button>
+        </div>
+        
+        <div class="output-section">
+            <div id="output" class="output-area"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
