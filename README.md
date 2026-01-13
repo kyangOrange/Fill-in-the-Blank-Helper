@@ -1,6 +1,8 @@
 # Fill in the Blank Review Helper
 
-A Java desktop application that helps students review by hiding answers in parentheses. This interactive tool allows users to paste text with answers in parentheses and test themselves by clicking through hints and full answers.
+A web-based application that helps students review by hiding answers in parentheses. This interactive tool allows users to paste text with answers in parentheses and test themselves by clicking through hints and full answers.
+
+🌐 **Live Demo**: [https://kyangOrange.github.io/Fill-in-the-Blank-Helper/](https://kyangOrange.github.io/Fill-in-the-Blank-Helper/)
 
 ## Features
 
