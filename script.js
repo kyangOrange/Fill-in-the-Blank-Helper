@@ -438,17 +438,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const firstCharIndex = text.indexOf(trimmedText[0]);
         const firstChar = text[firstCharIndex];
         
-        // Use Range to select just the first character
-        const range = document.createRange();
-        range.setStart(firstTextNode, firstCharIndex);
-        range.setEnd(firstTextNode, firstCharIndex + 1);
+        // Clone the entire structure and modify only the first text node
+        const cloneDiv = tempDiv.cloneNode(true);
+        const cloneFirstTextNode = findFirstTextNode(cloneDiv);
+        if (cloneFirstTextNode) {
+            // Replace the text node's content with just the first character
+            cloneFirstTextNode.textContent = firstChar;
+            
+            // Remove all siblings after the first text node in its parent
+            let current = cloneFirstTextNode.nextSibling;
+            while (current) {
+                const next = current.nextSibling;
+                current.remove();
+                current = next;
+            }
+            
+            // Walk up the parent chain and remove all siblings
+            let parent = cloneFirstTextNode.parentNode;
+            while (parent && parent !== cloneDiv) {
+                let sibling = parent.nextSibling;
+                while (sibling) {
+                    const next = sibling.nextSibling;
+                    sibling.remove();
+                    sibling = next;
+                }
+                parent = parent.parentNode;
+            }
+        }
         
-        // Clone the selected range (this preserves formatting)
-        const fragment = range.cloneContents();
-        const container = document.createElement('div');
-        container.appendChild(fragment);
-        
-        return container.innerHTML || firstChar;
+        return cloneDiv.innerHTML || firstChar;
     }
     
     function createClickableButton(content, index, htmlContent) {
