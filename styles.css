@@ -162,10 +162,23 @@ header h1 {
     margin-bottom: 0.5rem;
 }
 
+.bracket-selector-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.bracket-selector-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4908C2;
+    margin: 0;
+}
+
 .bracket-selector {
     display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .bracket-option {
