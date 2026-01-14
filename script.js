@@ -411,9 +411,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
         
-        // Find the first text node
+        // Find the first text node with content
         function findFirstTextNode(node) {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
                 return node;
             }
             for (let child = node.firstChild; child; child = child.nextSibling) {
@@ -424,25 +424,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const firstTextNode = findFirstTextNode(tempDiv);
-        if (!firstTextNode || !firstTextNode.textContent) {
+        if (!firstTextNode) {
             return plainContent ? plainContent.substring(0, 1) : '';
         }
         
-        const text = firstTextNode.textContent.trim();
-        if (!text) {
+        const text = firstTextNode.textContent;
+        const trimmedText = text.trim();
+        if (!trimmedText) {
             return plainContent ? plainContent.substring(0, 1) : '';
         }
         
-        const firstChar = text.substring(0, 1);
+        // Find the position of the first non-whitespace character
+        const firstCharIndex = text.indexOf(trimmedText[0]);
+        const firstChar = text[firstCharIndex];
         
-        // Use Range to extract the first character with formatting
+        // Use Range to select just the first character
         const range = document.createRange();
-        const textOffset = firstTextNode.textContent.indexOf(text);
-        range.setStart(firstTextNode, textOffset);
-        range.setEnd(firstTextNode, textOffset + 1);
+        range.setStart(firstTextNode, firstCharIndex);
+        range.setEnd(firstTextNode, firstCharIndex + 1);
         
+        // Clone the selected range (this preserves formatting)
+        const fragment = range.cloneContents();
         const container = document.createElement('div');
-        container.appendChild(range.cloneContents());
+        container.appendChild(fragment);
         
         return container.innerHTML || firstChar;
     }
