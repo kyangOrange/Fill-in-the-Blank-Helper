@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
         
-        // Pattern to match Chinese （）, English (), and curly brackets {}
-        const pattern = /（([^）]*)）|\(([^\)]*)\)|\{([^\}]*)\}/g;
+        // Pattern to match Chinese （）, English (), curly brackets {}, and square brackets []
+        const pattern = /（([^）]*)）|\(([^\)]*)\)|\{([^\}]*)\}|\[([^\]]*)\]/g;
         let lastIndex = 0;
         let match;
         let totalBlanks = 0;
@@ -64,11 +64,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 content = match[2].trim();
                 leftBracket = '(';
                 rightBracket = ')';
-            } else {
+            } else if (match[3] !== undefined) {
                 // Curly brackets {}
                 content = match[3].trim();
                 leftBracket = '{';
                 rightBracket = '}';
+            } else {
+                // Square brackets []
+                content = match[4].trim();
+                leftBracket = '[';
+                rightBracket = ']';
             }
             
             // Add left bracket
