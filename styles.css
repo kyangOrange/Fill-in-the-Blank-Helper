@@ -41,6 +41,17 @@ header h1 {
     font-size: 1.1rem;
 }
 
+.blank-counter {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #4908C2;
+    padding: 0.5rem 1rem;
+    background: #F5F0FF;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+
 .instructions {
     background: #F8FCFF;
     border-left: 4px solid #4908C2;
@@ -117,6 +128,38 @@ header h1 {
     margin-top: 2rem;
 }
 
+.output-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.output-header #fullscreenBtn {
+    display: none;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+}
+
 .output-area {
     min-height: 200px;
     padding: 1.5rem;
@@ -127,6 +170,29 @@ header h1 {
     line-height: 1.8;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.output-section:fullscreen {
+    background: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.output-section:fullscreen .output-header {
+    margin-bottom: 1rem;
+}
+
+.output-section:fullscreen .output-area {
+    font-size: 1.5rem;
+    padding: 2rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.output-section:fullscreen .blank-button {
+    font-size: 1.5rem;
+    padding: 0.5rem 0.75rem;
 }
 
 .blank-button {

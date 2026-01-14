@@ -12,12 +12,13 @@
         <header>
             <h1>Fill in the Blank Review Helper</h1>
             <p class="subtitle">Paste text with answers in parentheses and test yourself!</p>
+            <div id="blankCounter" class="blank-counter">0/0 blanks open</div>
         </header>
         
         <div class="instructions">
             <p><strong>Instructions:</strong></p>
             <ul>
-                <li>Paste text with answers in parentheses (English () or Chinese （）)</li>
+                <li>Paste text with answers in parentheses (English (), Chinese （）, or curly brackets {})</li>
                 <li>Click once on a blank to see the first character as a hint</li>
                 <li>Click again to see the full answer</li>
                 <li>Click a third time to reset to blank</li>
@@ -25,11 +26,14 @@
         </div>
         
         <div class="input-section">
-            <textarea id="textInput" placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)' or 'The capital of Japan is （Tokyo）'"></textarea>
+            <textarea id="textInput" placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)', 'The capital of Japan is （Tokyo）', or 'The capital of Germany is {Berlin}'"></textarea>
             <button id="processBtn" class="btn-primary">Process Text</button>
         </div>
         
         <div class="output-section">
+            <div class="output-header">
+                <button id="fullscreenBtn" class="btn-secondary">Fullscreen</button>
+            </div>
             <div id="output" class="output-area"></div>
         </div>
         
