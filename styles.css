@@ -95,6 +95,12 @@ header h1 {
     transition: border-color 0.3s ease;
 }
 
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
 #textInput:focus {
     outline: none;
     border-color: #4908C2;
@@ -129,9 +135,6 @@ header h1 {
 }
 
 .btn-reset {
-    display: block;
-    margin-left: auto;
-    margin-top: 0.5rem;
     background: #dc2626;
     color: white;
     border: none;
