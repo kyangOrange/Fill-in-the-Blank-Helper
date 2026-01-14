@@ -22,9 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resetBtn.addEventListener('click', function() {
             textInput.value = '';
             output.innerHTML = '<div id="blankCounter" class="blank-counter">0/0 blanks open</div>';
-            if (fullscreenBtn) {
-                fullscreenBtn.style.display = 'none';
-            }
             // Exit fullscreen if active
             if (document.fullscreenElement) {
                 document.exitFullscreen();
@@ -117,12 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update blank counter
         updateBlankCounter(blankButtons, totalBlanks);
-        
-        // Show fullscreen button if there's output
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        if (fullscreenBtn && totalBlanks > 0) {
-            fullscreenBtn.style.display = 'block';
-        }
         
         // Store blank buttons for counter updates
         output.setAttribute('data-blank-buttons', JSON.stringify(blankButtons.map((_, i) => i)));
