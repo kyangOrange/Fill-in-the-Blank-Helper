@@ -25,17 +25,17 @@
         </div>
         
         <div class="input-section">
-            <textarea id="textInput" placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)', 'The capital of Japan is （Tokyo）', 'The capital of Germany is {Berlin}', or 'The capital of Spain is [Madrid]'"></textarea>
+            <div id="textInput" class="text-input-editable" contenteditable="true" data-placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)', 'The capital of Japan is （Tokyo）', 'The capital of Germany is {Berlin}', or 'The capital of Spain is [Madrid]'"></div>
             <button id="processBtn" class="btn-primary">Process Text</button>
         </div>
         
         <div class="output-section">
             <div class="output-header">
                 <div class="bracket-selector-wrapper">
-                    <label class="bracket-selector-label">Select bracket types to process as blanks:</label>
+                    <label class="bracket-selector-label">Select types to process as blanks:</label>
                     <div class="custom-dropdown">
                         <button class="dropdown-toggle" id="dropdownToggle">
-                            <span id="dropdownText">All selected (4)</span>
+                            <span id="dropdownText">All selected (5)</span>
                             <span class="dropdown-arrow">▼</span>
                         </button>
                         <div class="dropdown-menu" id="dropdownMenu">
@@ -54,6 +54,10 @@
                             <label class="dropdown-option">
                                 <input type="checkbox" value="square" id="squareBrackets" checked>
                                 <span>Square []</span>
+                            </label>
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="capitalized" id="capitalizedWords" checked>
+                                <span>Capitalized Words (ALL CAPS)</span>
                             </label>
                         </div>
                     </div>

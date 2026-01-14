@@ -9,9 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Process button click handler
     processBtn.addEventListener('click', function() {
-        const text = textInput.value.trim();
-        if (text) {
-            processText(text);
+        // Get HTML content from contenteditable div
+        const htmlContent = textInput.innerHTML;
+        // Extract plain text for processing (strip HTML tags)
+        const text = textInput.textContent || textInput.innerText || '';
+        if (text.trim()) {
+            processText(text, htmlContent);
         } else {
             alert('Please paste some text first!');
         }
@@ -20,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset button click handler
     if (resetBtn) {
         resetBtn.addEventListener('click', function() {
-            textInput.value = '';
+            textInput.innerHTML = '';
             output.innerHTML = '<div id="blankCounter" class="blank-counter">0/0 blanks open</div>';
             // Exit fullscreen if active
             if (document.fullscreenElement) {
@@ -87,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function processText(text) {
+    function processText(text, htmlContent) {
         output.innerHTML = '';
         
         // Add blank counter to output area
@@ -102,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const englishSelected = document.getElementById('englishBrackets').checked;
         const curlySelected = document.getElementById('curlyBrackets').checked;
         const squareSelected = document.getElementById('squareBrackets').checked;
+        const capitalizedSelected = document.getElementById('capitalizedWords').checked;
         
         // Build pattern based on selected bracket types
         const patternParts = [];
@@ -110,90 +114,161 @@ document.addEventListener('DOMContentLoaded', function() {
         if (curlySelected) patternParts.push('\\{([^\\}]*)\\}');
         if (squareSelected) patternParts.push('\\[([^\\]]*)\\]');
         
-        if (patternParts.length === 0) {
-            // No bracket types selected
-            output.appendChild(document.createTextNode(text));
-            updateBlankCounter([], 0);
-            return;
-        }
+        // Pattern for fully capitalized words (all letters are uppercase, at least 2 letters)
+        const capitalizedWordPattern = /\b[A-Z]{2,}\b/g;
         
-        const pattern = new RegExp(patternParts.join('|'), 'g');
-        let lastIndex = 0;
-        let match;
-        let totalBlanks = 0;
-        const blankButtons = [];
+        // Create a temporary container to hold the HTML
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = htmlContent || text;
         
-        while ((match = pattern.exec(text)) !== null) {
-            // Add text before the match
-            if (match.index > lastIndex) {
-                const textBefore = document.createTextNode(text.substring(lastIndex, match.index));
-                output.appendChild(textBefore);
+        // Process the HTML structure to preserve formatting
+        processHTMLNode(tempContainer, output, patternParts, capitalizedWordPattern, {
+            chineseSelected, englishSelected, curlySelected, squareSelected, capitalizedSelected
+        });
+        
+        // Update blank counter
+        const blankButtons = output.querySelectorAll('.blank-button');
+        updateBlankCounter(Array.from(blankButtons), blankButtons.length);
+    }
+    
+    function processHTMLNode(sourceNode, targetParent, patternParts, capitalizedWordPattern, options) {
+        const blankButtons = targetParent.parentElement ? 
+            Array.from(targetParent.parentElement.querySelectorAll('.blank-button')) : [];
+        
+        for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                // Process text nodes
+                processTextNode(child, targetParent, patternParts, capitalizedWordPattern, options, blankButtons);
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+                // Clone element and its attributes to preserve formatting
+                const clonedElement = child.cloneNode(false);
+                targetParent.appendChild(clonedElement);
+                // Recursively process child nodes
+                processHTMLNode(child, clonedElement, patternParts, capitalizedWordPattern, options);
             }
-            
-            // Determine which type of brackets was matched by checking which capture group has content
-            // The capture groups are in order: Chinese, English, Curly, Square (if selected)
-            let content, leftBracket, rightBracket;
-            let groupIndex = 1;
-            
-            if (chineseSelected && match[groupIndex] !== undefined) {
-                content = match[groupIndex].trim();
-                leftBracket = '（';
-                rightBracket = '）';
-            } else {
-                if (chineseSelected) groupIndex++;
-                if (englishSelected && match[groupIndex] !== undefined) {
+        }
+    }
+    
+    function processTextNode(textNode, targetParent, patternParts, capitalizedWordPattern, options, blankButtons) {
+        const text = textNode.textContent;
+        if (!text) return;
+        
+        // Collect all matches
+        const allMatches = [];
+        let textIndex = 0;
+        
+        // Process bracket patterns
+        if (patternParts.length > 0) {
+            const bracketPattern = new RegExp(patternParts.join('|'), 'g');
+            let match;
+            while ((match = bracketPattern.exec(text)) !== null) {
+                let content, leftBracket, rightBracket;
+                let groupIndex = 1;
+                
+                if (options.chineseSelected && match[groupIndex] !== undefined) {
                     content = match[groupIndex].trim();
-                    leftBracket = '(';
-                    rightBracket = ')';
+                    leftBracket = '（';
+                    rightBracket = '）';
                 } else {
-                    if (englishSelected) groupIndex++;
-                    if (curlySelected && match[groupIndex] !== undefined) {
+                    if (options.chineseSelected) groupIndex++;
+                    if (options.englishSelected && match[groupIndex] !== undefined) {
                         content = match[groupIndex].trim();
-                        leftBracket = '{';
-                        rightBracket = '}';
+                        leftBracket = '(';
+                        rightBracket = ')';
                     } else {
-                        if (curlySelected) groupIndex++;
-                        if (squareSelected && match[groupIndex] !== undefined) {
+                        if (options.englishSelected) groupIndex++;
+                        if (options.curlySelected && match[groupIndex] !== undefined) {
                             content = match[groupIndex].trim();
-                            leftBracket = '[';
-                            rightBracket = ']';
+                            leftBracket = '{';
+                            rightBracket = '}';
                         } else {
-                            // No match found, skip
-                            lastIndex = pattern.lastIndex;
-                            continue;
+                            if (options.curlySelected) groupIndex++;
+                            if (options.squareSelected && match[groupIndex] !== undefined) {
+                                content = match[groupIndex].trim();
+                                leftBracket = '[';
+                                rightBracket = ']';
+                            } else {
+                                continue;
+                            }
                         }
                     }
                 }
+                
+                if (content) {
+                    allMatches.push({
+                        type: 'bracket',
+                        start: match.index,
+                        end: bracketPattern.lastIndex,
+                        content: content,
+                        leftBracket: leftBracket,
+                        rightBracket: rightBracket
+                    });
+                }
+            }
+        }
+        
+        // Process capitalized words
+        if (options.capitalizedSelected) {
+            let match;
+            while ((match = capitalizedWordPattern.exec(text)) !== null) {
+                let overlaps = false;
+                for (const bracketMatch of allMatches) {
+                    if (match.index >= bracketMatch.start && capitalizedWordPattern.lastIndex <= bracketMatch.end) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+                if (!overlaps) {
+                    allMatches.push({
+                        type: 'capitalized',
+                        start: match.index,
+                        end: capitalizedWordPattern.lastIndex,
+                        content: match[0]
+                    });
+                }
+            }
+        }
+        
+        // Sort matches by position
+        allMatches.sort((a, b) => a.start - b.start);
+        
+        // If no matches, just add the text node
+        if (allMatches.length === 0) {
+            targetParent.appendChild(document.createTextNode(text));
+            return;
+        }
+        
+        // Process matches
+        let lastIndex = 0;
+        for (const match of allMatches) {
+            // Add text before match
+            if (match.start > lastIndex) {
+                targetParent.appendChild(document.createTextNode(text.substring(lastIndex, match.start)));
             }
             
-            // Add left bracket
-            output.appendChild(document.createTextNode(leftBracket));
-            
-            if (content) {
-                // Create clickable button
-                const button = createClickableButton(content, blankButtons.length);
+            if (match.type === 'bracket') {
+                // Add left bracket
+                targetParent.appendChild(document.createTextNode(match.leftBracket));
+                // Create button
+                const button = createClickableButton(match.content, blankButtons.length);
                 blankButtons.push(button);
-                output.appendChild(button);
-                totalBlanks++;
+                targetParent.appendChild(button);
+                // Add right bracket
+                targetParent.appendChild(document.createTextNode(match.rightBracket));
+            } else if (match.type === 'capitalized') {
+                // Create button
+                const button = createClickableButton(match.content, blankButtons.length);
+                blankButtons.push(button);
+                targetParent.appendChild(button);
             }
             
-            // Add right bracket
-            output.appendChild(document.createTextNode(rightBracket));
-            
-            lastIndex = pattern.lastIndex;
+            lastIndex = match.end;
         }
         
-        // Add remaining text after last match
+        // Add remaining text
         if (lastIndex < text.length) {
-            const textAfter = document.createTextNode(text.substring(lastIndex));
-            output.appendChild(textAfter);
+            targetParent.appendChild(document.createTextNode(text.substring(lastIndex)));
         }
-        
-        // Update blank counter
-        updateBlankCounter(blankButtons, totalBlanks);
-        
-        // Store blank buttons for counter updates
-        output.setAttribute('data-blank-buttons', JSON.stringify(blankButtons.map((_, i) => i)));
     }
     
     function createClickableButton(content, index) {
