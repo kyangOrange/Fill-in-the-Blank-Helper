@@ -51,11 +51,13 @@ document.addEventListener('DOMContentLoaded', function() {
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
         
-        // Get selected bracket types
-        const chineseSelected = document.getElementById('chineseBrackets').checked;
-        const englishSelected = document.getElementById('englishBrackets').checked;
-        const curlySelected = document.getElementById('curlyBrackets').checked;
-        const squareSelected = document.getElementById('squareBrackets').checked;
+        // Get selected bracket types from dropdown
+        const bracketSelector = document.getElementById('bracketSelector');
+        const selectedValues = Array.from(bracketSelector.selectedOptions).map(option => option.value);
+        const chineseSelected = selectedValues.includes('chinese');
+        const englishSelected = selectedValues.includes('english');
+        const curlySelected = selectedValues.includes('curly');
+        const squareSelected = selectedValues.includes('square');
         
         // Build pattern based on selected bracket types
         const patternParts = [];
