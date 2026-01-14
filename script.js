@@ -215,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons) {
         let charOffset = 0;
+        const processedMatches = new Set(); // Track which matches have been processed
         
         function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
@@ -223,9 +224,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Find matches that overlap with this text node
                     const nodeStart = charOffset;
                     const nodeEnd = charOffset + text.length;
-                    const nodeMatches = matches.filter(m => 
-                        m.start < nodeEnd && m.end > nodeStart
-                    );
+                    const nodeMatches = matches
+                        .filter(m => m.start < nodeEnd && m.end > nodeStart && !processedMatches.has(m))
+                        .sort((a, b) => a.start - b.start);
                     
                     if (nodeMatches.length === 0) {
                         // No matches, just add the text
@@ -242,24 +243,32 @@ document.addEventListener('DOMContentLoaded', function() {
                                 parent.appendChild(document.createTextNode(text.substring(lastIndex, matchStart)));
                             }
                             
-                            // Handle match
-                            if (match.type === 'bracket') {
-                                // Add left bracket
-                                parent.appendChild(document.createTextNode(match.leftBracket));
-                                // Create button
-                                const button = createClickableButton(match.content, blankButtons.length);
-                                blankButtons.push(button);
-                                parent.appendChild(button);
-                                // Add right bracket
-                                parent.appendChild(document.createTextNode(match.rightBracket));
-                            } else if (match.type === 'capitalized') {
-                                // Create button
-                                const button = createClickableButton(match.content, blankButtons.length);
-                                blankButtons.push(button);
-                                parent.appendChild(button);
+                            // Only process if match hasn't been processed yet
+                            if (!processedMatches.has(match)) {
+                                // Handle match
+                                if (match.type === 'bracket') {
+                                    // Add left bracket
+                                    parent.appendChild(document.createTextNode(match.leftBracket));
+                                    // Create button
+                                    const button = createClickableButton(match.content, blankButtons.length);
+                                    blankButtons.push(button);
+                                    parent.appendChild(button);
+                                    // Add right bracket
+                                    parent.appendChild(document.createTextNode(match.rightBracket));
+                                } else if (match.type === 'capitalized') {
+                                    // Create button
+                                    const button = createClickableButton(match.content, blankButtons.length);
+                                    blankButtons.push(button);
+                                    parent.appendChild(button);
+                                }
+                                
+                                // Mark match as processed
+                                processedMatches.add(match);
+                                lastIndex = matchEnd;
+                            } else {
+                                // Match already processed, skip
+                                lastIndex = matchEnd;
                             }
-                            
-                            lastIndex = matchEnd;
                         }
                         
                         // Add remaining text
