@@ -117,74 +117,37 @@ document.addEventListener('DOMContentLoaded', function() {
         // Pattern for fully capitalized words (all letters are uppercase, at least 2 letters)
         const capitalizedWordPattern = /\b[A-Z]{2,}\b/g;
         
-        // Create a temporary container to hold the HTML
-        const tempContainer = document.createElement('div');
-        tempContainer.innerHTML = htmlContent || text;
-        
-        // Process the HTML structure to preserve formatting
-        processHTMLNode(tempContainer, output, patternParts, capitalizedWordPattern, {
-            chineseSelected, englishSelected, curlySelected, squareSelected, capitalizedSelected
-        });
-        
-        // Update blank counter
-        const blankButtons = output.querySelectorAll('.blank-button');
-        updateBlankCounter(Array.from(blankButtons), blankButtons.length);
-    }
-    
-    function processHTMLNode(sourceNode, targetParent, patternParts, capitalizedWordPattern, options) {
-        const blankButtons = targetParent.parentElement ? 
-            Array.from(targetParent.parentElement.querySelectorAll('.blank-button')) : [];
-        
-        for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
-            if (child.nodeType === Node.TEXT_NODE) {
-                // Process text nodes
-                processTextNode(child, targetParent, patternParts, capitalizedWordPattern, options, blankButtons);
-            } else if (child.nodeType === Node.ELEMENT_NODE) {
-                // Clone element and its attributes to preserve formatting
-                const clonedElement = child.cloneNode(false);
-                targetParent.appendChild(clonedElement);
-                // Recursively process child nodes
-                processHTMLNode(child, clonedElement, patternParts, capitalizedWordPattern, options);
-            }
-        }
-    }
-    
-    function processTextNode(textNode, targetParent, patternParts, capitalizedWordPattern, options, blankButtons) {
-        const text = textNode.textContent;
-        if (!text) return;
-        
-        // Collect all matches
+        // Find all matches in the plain text first
         const allMatches = [];
-        let textIndex = 0;
         
         // Process bracket patterns
         if (patternParts.length > 0) {
             const bracketPattern = new RegExp(patternParts.join('|'), 'g');
-            let match;
-            while ((match = bracketPattern.exec(text)) !== null) {
+            let bracketMatch;
+            while ((bracketMatch = bracketPattern.exec(text)) !== null) {
                 let content, leftBracket, rightBracket;
                 let groupIndex = 1;
                 
-                if (options.chineseSelected && match[groupIndex] !== undefined) {
-                    content = match[groupIndex].trim();
+                if (chineseSelected && bracketMatch[groupIndex] !== undefined) {
+                    content = bracketMatch[groupIndex].trim();
                     leftBracket = '（';
                     rightBracket = '）';
                 } else {
-                    if (options.chineseSelected) groupIndex++;
-                    if (options.englishSelected && match[groupIndex] !== undefined) {
-                        content = match[groupIndex].trim();
+                    if (chineseSelected) groupIndex++;
+                    if (englishSelected && bracketMatch[groupIndex] !== undefined) {
+                        content = bracketMatch[groupIndex].trim();
                         leftBracket = '(';
                         rightBracket = ')';
                     } else {
-                        if (options.englishSelected) groupIndex++;
-                        if (options.curlySelected && match[groupIndex] !== undefined) {
-                            content = match[groupIndex].trim();
+                        if (englishSelected) groupIndex++;
+                        if (curlySelected && bracketMatch[groupIndex] !== undefined) {
+                            content = bracketMatch[groupIndex].trim();
                             leftBracket = '{';
                             rightBracket = '}';
                         } else {
-                            if (options.curlySelected) groupIndex++;
-                            if (options.squareSelected && match[groupIndex] !== undefined) {
-                                content = match[groupIndex].trim();
+                            if (curlySelected) groupIndex++;
+                            if (squareSelected && bracketMatch[groupIndex] !== undefined) {
+                                content = bracketMatch[groupIndex].trim();
                                 leftBracket = '[';
                                 rightBracket = ']';
                             } else {
@@ -197,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (content) {
                     allMatches.push({
                         type: 'bracket',
-                        start: match.index,
+                        start: bracketMatch.index,
                         end: bracketPattern.lastIndex,
                         content: content,
                         leftBracket: leftBracket,
@@ -207,23 +170,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Process capitalized words
-        if (options.capitalizedSelected) {
-            let match;
-            while ((match = capitalizedWordPattern.exec(text)) !== null) {
+        // Process fully capitalized words (only if selected)
+        if (capitalizedSelected) {
+            let capitalizedMatch;
+            while ((capitalizedMatch = capitalizedWordPattern.exec(text)) !== null) {
+                const word = capitalizedMatch[0];
+                const start = capitalizedMatch.index;
+                const end = capitalizedWordPattern.lastIndex;
+                
+                // Check if this word overlaps with any bracket match
                 let overlaps = false;
                 for (const bracketMatch of allMatches) {
-                    if (match.index >= bracketMatch.start && capitalizedWordPattern.lastIndex <= bracketMatch.end) {
+                    if (start >= bracketMatch.start && end <= bracketMatch.end) {
                         overlaps = true;
                         break;
                     }
                 }
+                
                 if (!overlaps) {
                     allMatches.push({
                         type: 'capitalized',
-                        start: match.index,
-                        end: capitalizedWordPattern.lastIndex,
-                        content: match[0]
+                        start: start,
+                        end: end,
+                        content: word
                     });
                 }
             }
@@ -232,42 +201,89 @@ document.addEventListener('DOMContentLoaded', function() {
         // Sort matches by position
         allMatches.sort((a, b) => a.start - b.start);
         
-        // If no matches, just add the text node
-        if (allMatches.length === 0) {
-            targetParent.appendChild(document.createTextNode(text));
-            return;
+        // Create a temporary container to hold the HTML
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = htmlContent || text;
+        
+        // Process the HTML structure with matches
+        const blankButtons = [];
+        processHTMLWithMatches(tempContainer, output, allMatches, blankButtons);
+        
+        // Update blank counter
+        updateBlankCounter(blankButtons, blankButtons.length);
+    }
+    
+    function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons) {
+        let charOffset = 0;
+        
+        function walkNode(node, parent) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent;
+                if (text) {
+                    // Find matches that overlap with this text node
+                    const nodeStart = charOffset;
+                    const nodeEnd = charOffset + text.length;
+                    const nodeMatches = matches.filter(m => 
+                        m.start < nodeEnd && m.end > nodeStart
+                    );
+                    
+                    if (nodeMatches.length === 0) {
+                        // No matches, just add the text
+                        parent.appendChild(document.createTextNode(text));
+                    } else {
+                        // Process matches in this text node
+                        let lastIndex = 0;
+                        for (const match of nodeMatches) {
+                            const matchStart = Math.max(0, match.start - nodeStart);
+                            const matchEnd = Math.min(text.length, match.end - nodeStart);
+                            
+                            // Add text before match
+                            if (matchStart > lastIndex) {
+                                parent.appendChild(document.createTextNode(text.substring(lastIndex, matchStart)));
+                            }
+                            
+                            // Handle match
+                            if (match.type === 'bracket') {
+                                // Add left bracket
+                                parent.appendChild(document.createTextNode(match.leftBracket));
+                                // Create button
+                                const button = createClickableButton(match.content, blankButtons.length);
+                                blankButtons.push(button);
+                                parent.appendChild(button);
+                                // Add right bracket
+                                parent.appendChild(document.createTextNode(match.rightBracket));
+                            } else if (match.type === 'capitalized') {
+                                // Create button
+                                const button = createClickableButton(match.content, blankButtons.length);
+                                blankButtons.push(button);
+                                parent.appendChild(button);
+                            }
+                            
+                            lastIndex = matchEnd;
+                        }
+                        
+                        // Add remaining text
+                        if (lastIndex < text.length) {
+                            parent.appendChild(document.createTextNode(text.substring(lastIndex)));
+                        }
+                    }
+                    charOffset += text.length;
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                // Clone element and its attributes to preserve formatting
+                const clonedElement = node.cloneNode(false);
+                parent.appendChild(clonedElement);
+                
+                // Recursively process child nodes
+                for (let child = node.firstChild; child; child = child.nextSibling) {
+                    walkNode(child, clonedElement);
+                }
+            }
         }
         
-        // Process matches
-        let lastIndex = 0;
-        for (const match of allMatches) {
-            // Add text before match
-            if (match.start > lastIndex) {
-                targetParent.appendChild(document.createTextNode(text.substring(lastIndex, match.start)));
-            }
-            
-            if (match.type === 'bracket') {
-                // Add left bracket
-                targetParent.appendChild(document.createTextNode(match.leftBracket));
-                // Create button
-                const button = createClickableButton(match.content, blankButtons.length);
-                blankButtons.push(button);
-                targetParent.appendChild(button);
-                // Add right bracket
-                targetParent.appendChild(document.createTextNode(match.rightBracket));
-            } else if (match.type === 'capitalized') {
-                // Create button
-                const button = createClickableButton(match.content, blankButtons.length);
-                blankButtons.push(button);
-                targetParent.appendChild(button);
-            }
-            
-            lastIndex = match.end;
-        }
-        
-        // Add remaining text
-        if (lastIndex < text.length) {
-            targetParent.appendChild(document.createTextNode(text.substring(lastIndex)));
+        // Start walking from sourceNode's children
+        for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
+            walkNode(child, targetParent);
         }
     }
     
