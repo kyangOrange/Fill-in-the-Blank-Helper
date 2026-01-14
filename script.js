@@ -225,28 +225,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Helper function to check if element is italic
         function isItalic(element) {
-            const tagName = element.tagName?.toLowerCase();
+            if (!element.tagName) return false;
+            const tagName = element.tagName.toLowerCase();
             if (tagName === 'i' || tagName === 'em') return true;
-            const style = window.getComputedStyle(element);
-            return style.fontStyle === 'italic';
+            const style = element.getAttribute('style') || '';
+            return style.includes('font-style:') && (style.includes('font-style:italic') || style.includes('font-style: italic'));
         }
         
         // Helper function to check if element is bold
         function isBold(element) {
-            const tagName = element.tagName?.toLowerCase();
+            if (!element.tagName) return false;
+            const tagName = element.tagName.toLowerCase();
             if (tagName === 'b' || tagName === 'strong') return true;
-            const style = window.getComputedStyle(element);
-            const weight = style.fontWeight;
-            return weight === 'bold' || weight === '700' || parseInt(weight) >= 700;
+            const style = element.getAttribute('style') || '';
+            return style.includes('font-weight:') && (style.includes('font-weight:bold') || style.includes('font-weight: bold') || 
+                   style.match(/font-weight:\s*(700|800|900)/));
         }
         
         // Helper function to check if element is highlighted
         function isHighlighted(element) {
-            const tagName = element.tagName?.toLowerCase();
+            if (!element.tagName) return false;
+            const tagName = element.tagName.toLowerCase();
             if (tagName === 'mark') return true;
-            const style = window.getComputedStyle(element);
-            return style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)' && 
-                   style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgb(0, 0, 0)';
+            const style = element.getAttribute('style') || '';
+            return style.includes('background-color:') || style.includes('background:');
         }
         
         function walkNode(node, parent) {
