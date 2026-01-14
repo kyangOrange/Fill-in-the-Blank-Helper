@@ -361,7 +361,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (shouldConvert && elementText.trim()) {
                     // Convert formatted element to button
-                    const button = createClickableButton(elementText.trim(), blankButtons.length);
+                    const elementHtml = node.innerHTML;
+                    const button = createClickableButton(elementText.trim(), blankButtons.length, elementHtml);
                     blankButtons.push(button);
                     parent.appendChild(button);
                 } else {
@@ -383,11 +384,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function createClickableButton(content, index) {
+    function createClickableButton(content, index, htmlContent) {
         const button = document.createElement('button');
         button.className = 'blank-button';
         button.textContent = '　　'; // Full-width spaces for blank appearance
         button.setAttribute('data-content', content);
+        button.setAttribute('data-html-content', htmlContent || content);
         button.setAttribute('data-state', 'blank'); // blank, hint, answer
         button.setAttribute('data-index', index);
         
@@ -396,6 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             clickCount++;
             const state = clickCount % 3;
+            const storedHtmlContent = button.getAttribute('data-html-content') || content;
             
             if (state === 1) {
                 // Show first character as hint
@@ -403,8 +406,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
             } else if (state === 2) {
-                // Show full answer
-                button.textContent = content;
+                // Show full answer with formatting preserved
+                button.innerHTML = storedHtmlContent;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
