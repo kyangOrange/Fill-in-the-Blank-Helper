@@ -210,15 +210,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Process the HTML structure with matches
         const blankButtons = [];
-        processHTMLWithMatches(tempContainer, output, allMatches, blankButtons);
+        processHTMLWithMatches(tempContainer, output, allMatches, blankButtons, {
+            italicSelected, boldSelected, highlightedSelected
+        });
         
         // Update blank counter
         updateBlankCounter(blankButtons, blankButtons.length);
     }
     
-    function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons) {
+    function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons, formatOptions) {
         let charOffset = 0;
         const processedMatches = new Set(); // Track which matches have been processed
+        formatOptions = formatOptions || {};
+        
+        // Helper function to check if element is italic
+        function isItalic(element) {
+            const tagName = element.tagName?.toLowerCase();
+            if (tagName === 'i' || tagName === 'em') return true;
+            const style = window.getComputedStyle(element);
+            return style.fontStyle === 'italic';
+        }
+        
+        // Helper function to check if element is bold
+        function isBold(element) {
+            const tagName = element.tagName?.toLowerCase();
+            if (tagName === 'b' || tagName === 'strong') return true;
+            const style = window.getComputedStyle(element);
+            const weight = style.fontWeight;
+            return weight === 'bold' || weight === '700' || parseInt(weight) >= 700;
+        }
+        
+        // Helper function to check if element is highlighted
+        function isHighlighted(element) {
+            const tagName = element.tagName?.toLowerCase();
+            if (tagName === 'mark') return true;
+            const style = window.getComputedStyle(element);
+            return style.backgroundColor && style.backgroundColor !== 'rgba(0, 0, 0, 0)' && 
+                   style.backgroundColor !== 'transparent' && style.backgroundColor !== 'rgb(0, 0, 0)';
+        }
         
         function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
@@ -286,7 +315,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     parent.appendChild(button);
                                     // Add right bracket
                                     parent.appendChild(document.createTextNode(range.match.rightBracket));
-                                } else if (range.match.type === 'capitalized') {
+                                } else if (range.match.type === 'capitalized' || 
+                                          range.match.type === 'italic' ||
+                                          range.match.type === 'bold' ||
+                                          range.match.type === 'highlighted') {
                                     // Create button
                                     const button = createClickableButton(range.match.content, blankButtons.length);
                                     blankButtons.push(button);
@@ -309,13 +341,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Clone element and its attributes to preserve formatting
-                const clonedElement = node.cloneNode(false);
-                parent.appendChild(clonedElement);
+                // Check if element should be converted to button
+                const elementText = node.textContent || '';
+                let shouldConvert = false;
+                let formatType = null;
                 
-                // Recursively process child nodes
-                for (let child = node.firstChild; child; child = child.nextSibling) {
-                    walkNode(child, clonedElement);
+                if (formatOptions.italicSelected && isItalic(node)) {
+                    shouldConvert = true;
+                    formatType = 'italic';
+                } else if (formatOptions.boldSelected && isBold(node)) {
+                    shouldConvert = true;
+                    formatType = 'bold';
+                } else if (formatOptions.highlightedSelected && isHighlighted(node)) {
+                    shouldConvert = true;
+                    formatType = 'highlighted';
+                }
+                
+                if (shouldConvert && elementText.trim()) {
+                    // Convert formatted element to button
+                    const button = createClickableButton(elementText.trim(), blankButtons.length);
+                    blankButtons.push(button);
+                    parent.appendChild(button);
+                } else {
+                    // Clone element and its attributes to preserve formatting
+                    const clonedElement = node.cloneNode(false);
+                    parent.appendChild(clonedElement);
+                    
+                    // Recursively process child nodes
+                    for (let child = node.firstChild; child; child = child.nextSibling) {
+                        walkNode(child, clonedElement);
+                    }
                 }
             }
         }
