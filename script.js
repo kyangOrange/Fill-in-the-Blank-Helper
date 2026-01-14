@@ -361,7 +361,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (shouldConvert && elementText.trim()) {
                     // Convert formatted element to button
-                    const elementHtml = node.innerHTML;
+                    // Preserve the formatting by storing the element's HTML structure
+                    let elementHtml = elementText.trim();
+                    const tagName = node.tagName.toLowerCase();
+                    
+                    // Wrap content with appropriate formatting tags
+                    if (tagName === 'i' || tagName === 'em') {
+                        elementHtml = `<i>${elementHtml}</i>`;
+                    } else if (tagName === 'b' || tagName === 'strong') {
+                        elementHtml = `<b>${elementHtml}</b>`;
+                    } else if (tagName === 'mark') {
+                        elementHtml = `<mark>${elementHtml}</mark>`;
+                    } else {
+                        // For elements with inline styles, preserve the style attribute
+                        const style = node.getAttribute('style') || '';
+                        if (style) {
+                            elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                        }
+                    }
+                    
                     const button = createClickableButton(elementText.trim(), blankButtons.length, elementHtml);
                     blankButtons.push(button);
                     parent.appendChild(button);
