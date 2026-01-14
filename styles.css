@@ -128,6 +128,31 @@ header h1 {
     transform: translateY(0);
 }
 
+.btn-reset {
+    display: block;
+    margin-left: auto;
+    margin-top: 0.5rem;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-reset:active {
+    transform: translateY(0);
+}
+
 .output-section {
     margin-top: 2rem;
 }

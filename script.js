@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const processBtn = document.getElementById('processBtn');
     const output = document.getElementById('output');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const resetBtn = document.getElementById('resetBtn');
     
     // Process button click handler
     processBtn.addEventListener('click', function() {
@@ -15,6 +16,21 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please paste some text first!');
         }
     });
+    
+    // Reset button click handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            textInput.value = '';
+            output.innerHTML = '<div id="blankCounter" class="blank-counter">0/0 blanks open</div>';
+            if (fullscreenBtn) {
+                fullscreenBtn.style.display = 'none';
+            }
+            // Exit fullscreen if active
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        });
+    }
     
     // Fullscreen button click handler
     if (fullscreenBtn) {
