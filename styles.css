@@ -42,14 +42,18 @@ header h1 {
 }
 
 .blank-counter {
-    margin-top: 1rem;
-    font-size: 1.1rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #4908C2;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     background: #F5F0FF;
     border-radius: 0.5rem;
     display: inline-block;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .instructions {
@@ -139,11 +143,11 @@ header h1 {
 }
 
 .btn-secondary {
-    background: #6b7280;
+    background: #1e3a8a;
     color: white;
     border: none;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -151,9 +155,9 @@ header h1 {
 }
 
 .btn-secondary:hover {
-    background: #4b5563;
+    background: #1e40af;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
 }
 
 .btn-secondary:active {
@@ -161,6 +165,7 @@ header h1 {
 }
 
 .output-area {
+    position: relative;
     min-height: 200px;
     padding: 1.5rem;
     border: 2px solid #e5e7eb;
@@ -188,6 +193,13 @@ header h1 {
     padding: 2rem;
     flex: 1;
     overflow-y: auto;
+}
+
+.output-section:fullscreen .blank-counter {
+    top: 2rem;
+    right: 2rem;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
 }
 
 .output-section:fullscreen .blank-button {

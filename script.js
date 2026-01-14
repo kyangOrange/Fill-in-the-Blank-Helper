@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function processText(text) {
         output.innerHTML = '';
         
+        // Add blank counter to output area
+        const counterElement = document.createElement('div');
+        counterElement.id = 'blankCounter';
+        counterElement.className = 'blank-counter';
+        counterElement.textContent = '0/0 blanks open';
+        output.appendChild(counterElement);
+        
         // Pattern to match Chinese （）, English (), and curly brackets {}
         const pattern = /（([^）]*)）|\(([^\)]*)\)|\{([^\}]*)\}/g;
         let lastIndex = 0;
