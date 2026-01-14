@@ -106,6 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const curlySelected = document.getElementById('curlyBrackets').checked;
         const squareSelected = document.getElementById('squareBrackets').checked;
         const capitalizedSelected = document.getElementById('capitalizedWords').checked;
+        const italicSelected = document.getElementById('italicText').checked;
+        const boldSelected = document.getElementById('boldText').checked;
+        const highlightedSelected = document.getElementById('highlightedText').checked;
         
         // Build pattern based on selected bracket types
         const patternParts = [];
