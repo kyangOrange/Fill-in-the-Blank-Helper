@@ -223,6 +223,45 @@ document.addEventListener('DOMContentLoaded', function() {
         const processedMatches = new Set(); // Track which matches have been processed
         formatOptions = formatOptions || {};
         
+        // Helper function to extract HTML content from source structure at a specific range
+        function extractHTMLContent(start, end) {
+            let currentOffset = 0;
+            const container = document.createElement('div');
+            
+            function extractFromNode(node, targetParent) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent;
+                    const nodeStart = currentOffset;
+                    const nodeEnd = currentOffset + text.length;
+                    
+                    if (nodeStart < end && nodeEnd > start) {
+                        // This text node overlaps with the range
+                        const extractStart = Math.max(0, start - nodeStart);
+                        const extractEnd = Math.min(text.length, end - nodeStart);
+                        if (extractEnd > extractStart) {
+                            targetParent.appendChild(document.createTextNode(text.substring(extractStart, extractEnd)));
+                        }
+                    }
+                    currentOffset = nodeEnd;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const clonedElement = node.cloneNode(false);
+                    targetParent.appendChild(clonedElement);
+                    
+                    for (let child = node.firstChild; child; child = child.nextSibling) {
+                        extractFromNode(child, clonedElement);
+                        if (currentOffset >= end) break;
+                    }
+                }
+            }
+            
+            for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
+                extractFromNode(child, container);
+                if (currentOffset >= end) break;
+            }
+            
+            return container.innerHTML;
+        }
+        
         // Helper function to check if element is italic
         function isItalic(element) {
             if (!element.tagName) return false;
@@ -311,8 +350,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (range.match.type === 'bracket') {
                                     // Add left bracket
                                     parent.appendChild(document.createTextNode(range.match.leftBracket));
-                                    // Create button
-                                    const button = createClickableButton(range.match.content, blankButtons.length);
+                                    // Extract HTML content from source structure for the bracket content
+                                    const htmlContent = extractHTMLContent(range.match.start + range.match.leftBracket.length, range.match.end - range.match.rightBracket.length);
+                                    // Create button with HTML content
+                                    const button = createClickableButton(range.match.content, blankButtons.length, htmlContent);
                                     blankButtons.push(button);
                                     parent.appendChild(button);
                                     // Add right bracket
@@ -321,8 +362,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                           range.match.type === 'italic' ||
                                           range.match.type === 'bold' ||
                                           range.match.type === 'highlighted') {
-                                    // Create button
-                                    const button = createClickableButton(range.match.content, blankButtons.length);
+                                    // Extract HTML content from source structure
+                                    const htmlContent = extractHTMLContent(range.match.start, range.match.end);
+                                    // Create button with HTML content
+                                    const button = createClickableButton(range.match.content, blankButtons.length, htmlContent);
                                     blankButtons.push(button);
                                     parent.appendChild(button);
                                 }
