@@ -402,6 +402,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Helper function to extract first character from HTML while preserving formatting
+    function getFirstCharacterHTML(htmlContent, plainContent) {
+        if (!htmlContent || htmlContent === plainContent) {
+            return plainContent ? plainContent.substring(0, 1) : '';
+        }
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        
+        // Find the first text node
+        function findFirstTextNode(node) {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                return node;
+            }
+            for (let child = node.firstChild; child; child = child.nextSibling) {
+                const textNode = findFirstTextNode(child);
+                if (textNode) return textNode;
+            }
+            return null;
+        }
+        
+        const firstTextNode = findFirstTextNode(tempDiv);
+        if (!firstTextNode || !firstTextNode.textContent) {
+            return plainContent ? plainContent.substring(0, 1) : '';
+        }
+        
+        const text = firstTextNode.textContent.trim();
+        if (!text) {
+            return plainContent ? plainContent.substring(0, 1) : '';
+        }
+        
+        const firstChar = text.substring(0, 1);
+        
+        // Use Range to extract the first character with formatting
+        const range = document.createRange();
+        const textOffset = firstTextNode.textContent.indexOf(text);
+        range.setStart(firstTextNode, textOffset);
+        range.setEnd(firstTextNode, textOffset + 1);
+        
+        const container = document.createElement('div');
+        container.appendChild(range.cloneContents());
+        
+        return container.innerHTML || firstChar;
+    }
+    
     function createClickableButton(content, index, htmlContent) {
         const button = document.createElement('button');
         button.className = 'blank-button';
@@ -419,8 +464,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
             
             if (state === 1) {
-                // Show first character as hint
-                button.textContent = content.substring(0, 1);
+                // Show first character as hint with formatting preserved
+                const firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
+                button.innerHTML = firstCharHtml;
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
             } else if (state === 2) {
