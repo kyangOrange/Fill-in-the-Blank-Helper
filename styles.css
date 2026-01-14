@@ -179,8 +179,14 @@ header h1 {
     margin: 0;
 }
 
-.bracket-selector {
-    padding: 0.5rem;
+.custom-dropdown {
+    position: relative;
+    min-width: 180px;
+}
+
+.dropdown-toggle {
+    width: 100%;
+    padding: 0.5rem 1rem;
     border: 2px solid #e5e7eb;
     border-radius: 0.5rem;
     font-size: 0.9rem;
@@ -188,17 +194,62 @@ header h1 {
     color: #4b5563;
     background: white;
     cursor: pointer;
-    min-width: 150px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     transition: border-color 0.3s ease;
 }
 
-.bracket-selector:focus {
-    outline: none;
+.dropdown-toggle:hover {
     border-color: #4908C2;
 }
 
-.bracket-selector option {
-    padding: 0.25rem;
+.dropdown-arrow {
+    font-size: 0.75rem;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    min-width: 100%;
+    padding: 0.5rem 0;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4b5563;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-option:hover {
+    background-color: #f5f0ff;
+}
+
+.dropdown-option input[type="checkbox"] {
+    cursor: pointer;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #4908C2;
 }
 
 .output-footer {

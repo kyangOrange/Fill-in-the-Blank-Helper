@@ -32,13 +32,31 @@
         <div class="output-section">
             <div class="output-header">
                 <div class="bracket-selector-wrapper">
-                    <label for="bracketSelector" class="bracket-selector-label">Select bracket types to process as blanks:</label>
-                    <select id="bracketSelector" class="bracket-selector" multiple>
-                        <option value="chinese" selected>Chinese （）</option>
-                        <option value="english" selected>English ()</option>
-                        <option value="curly" selected>Curly {}</option>
-                        <option value="square" selected>Square []</option>
-                    </select>
+                    <label class="bracket-selector-label">Select bracket types to process as blanks:</label>
+                    <div class="custom-dropdown">
+                        <button class="dropdown-toggle" id="dropdownToggle">
+                            <span id="dropdownText">All selected (4)</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="chinese" id="chineseBrackets" checked>
+                                <span>Chinese （）</span>
+                            </label>
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="english" id="englishBrackets" checked>
+                                <span>English ()</span>
+                            </label>
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="curly" id="curlyBrackets" checked>
+                                <span>Curly {}</span>
+                            </label>
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="square" id="squareBrackets" checked>
+                                <span>Square []</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <button id="fullscreenBtn" class="btn-secondary">Fullscreen</button>
             </div>

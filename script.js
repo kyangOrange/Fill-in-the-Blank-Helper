@@ -41,6 +41,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Custom dropdown functionality
+    const dropdownToggle = document.getElementById('dropdownToggle');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownText = document.getElementById('dropdownText');
+    const bracketCheckboxes = document.querySelectorAll('.dropdown-option input[type="checkbox"]');
+    
+    // Toggle dropdown
+    if (dropdownToggle && dropdownMenu) {
+        dropdownToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+            const arrow = dropdownToggle.querySelector('.dropdown-arrow');
+            arrow.textContent = dropdownMenu.classList.contains('show') ? '▲' : '▼';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+                const arrow = dropdownToggle.querySelector('.dropdown-arrow');
+                arrow.textContent = '▼';
+            }
+        });
+        
+        // Update dropdown text when checkboxes change
+        bracketCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateDropdownText);
+        });
+        
+        // Initialize dropdown text
+        updateDropdownText();
+    }
+    
+    function updateDropdownText() {
+        const selected = Array.from(bracketCheckboxes).filter(cb => cb.checked);
+        const total = bracketCheckboxes.length;
+        
+        if (selected.length === 0) {
+            dropdownText.textContent = 'None selected';
+        } else if (selected.length === total) {
+            dropdownText.textContent = `All selected (${total})`;
+        } else {
+            dropdownText.textContent = `${selected.length} selected`;
+        }
+    }
+    
     function processText(text) {
         output.innerHTML = '';
         
@@ -51,13 +97,11 @@ document.addEventListener('DOMContentLoaded', function() {
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
         
-        // Get selected bracket types from dropdown
-        const bracketSelector = document.getElementById('bracketSelector');
-        const selectedValues = Array.from(bracketSelector.selectedOptions).map(option => option.value);
-        const chineseSelected = selectedValues.includes('chinese');
-        const englishSelected = selectedValues.includes('english');
-        const curlySelected = selectedValues.includes('curly');
-        const squareSelected = selectedValues.includes('square');
+        // Get selected bracket types from checkboxes
+        const chineseSelected = document.getElementById('chineseBrackets').checked;
+        const englishSelected = document.getElementById('englishBrackets').checked;
+        const curlySelected = document.getElementById('curlyBrackets').checked;
+        const squareSelected = document.getElementById('squareBrackets').checked;
         
         // Build pattern based on selected bracket types
         const patternParts = [];
