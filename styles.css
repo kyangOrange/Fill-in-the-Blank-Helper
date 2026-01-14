@@ -325,7 +325,7 @@ header h1 {
 }
 
 .blank-button {
-    background: transparent;
+    background: rgba(0, 0, 0, 0.03);
     border: none;
     color: #2563eb;
     cursor: pointer;
@@ -353,7 +353,6 @@ header h1 {
 
 .blank-button.answer-state {
     color: #2563eb;
-    font-weight: 600;
     background: rgba(37, 99, 235, 0.05);
 }
 
