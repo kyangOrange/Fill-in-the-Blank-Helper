@@ -156,10 +156,14 @@ header h1 {
 }
 
 .output-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    position: relative;
     margin-bottom: 0.5rem;
+}
+
+.output-header #fullscreenBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
 .bracket-selector-wrapper {
