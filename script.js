@@ -51,8 +51,27 @@ document.addEventListener('DOMContentLoaded', function() {
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
         
-        // Pattern to match Chinese （）, English (), curly brackets {}, and square brackets []
-        const pattern = /（([^）]*)）|\(([^\)]*)\)|\{([^\}]*)\}|\[([^\]]*)\]/g;
+        // Get selected bracket types
+        const chineseSelected = document.getElementById('chineseBrackets').checked;
+        const englishSelected = document.getElementById('englishBrackets').checked;
+        const curlySelected = document.getElementById('curlyBrackets').checked;
+        const squareSelected = document.getElementById('squareBrackets').checked;
+        
+        // Build pattern based on selected bracket types
+        const patternParts = [];
+        if (chineseSelected) patternParts.push('（([^）]*)）');
+        if (englishSelected) patternParts.push('\\(([^\\)]*)\\)');
+        if (curlySelected) patternParts.push('\\{([^\\}]*)\\}');
+        if (squareSelected) patternParts.push('\\[([^\\]]*)\\]');
+        
+        if (patternParts.length === 0) {
+            // No bracket types selected
+            output.appendChild(document.createTextNode(text));
+            updateBlankCounter([], 0);
+            return;
+        }
+        
+        const pattern = new RegExp(patternParts.join('|'), 'g');
         let lastIndex = 0;
         let match;
         let totalBlanks = 0;
@@ -65,28 +84,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 output.appendChild(textBefore);
             }
             
-            // Determine which type of brackets was matched
+            // Determine which type of brackets was matched by checking which capture group has content
+            // The capture groups are in order: Chinese, English, Curly, Square (if selected)
             let content, leftBracket, rightBracket;
-            if (match[1] !== undefined) {
-                // Chinese parentheses （）
-                content = match[1].trim();
+            let groupIndex = 1;
+            
+            if (chineseSelected && match[groupIndex] !== undefined) {
+                content = match[groupIndex].trim();
                 leftBracket = '（';
                 rightBracket = '）';
-            } else if (match[2] !== undefined) {
-                // English parentheses ()
-                content = match[2].trim();
-                leftBracket = '(';
-                rightBracket = ')';
-            } else if (match[3] !== undefined) {
-                // Curly brackets {}
-                content = match[3].trim();
-                leftBracket = '{';
-                rightBracket = '}';
             } else {
-                // Square brackets []
-                content = match[4].trim();
-                leftBracket = '[';
-                rightBracket = ']';
+                if (chineseSelected) groupIndex++;
+                if (englishSelected && match[groupIndex] !== undefined) {
+                    content = match[groupIndex].trim();
+                    leftBracket = '(';
+                    rightBracket = ')';
+                } else {
+                    if (englishSelected) groupIndex++;
+                    if (curlySelected && match[groupIndex] !== undefined) {
+                        content = match[groupIndex].trim();
+                        leftBracket = '{';
+                        rightBracket = '}';
+                    } else {
+                        if (curlySelected) groupIndex++;
+                        if (squareSelected && match[groupIndex] !== undefined) {
+                            content = match[groupIndex].trim();
+                            leftBracket = '[';
+                            rightBracket = ']';
+                        } else {
+                            // No match found, skip
+                            lastIndex = pattern.lastIndex;
+                            continue;
+                        }
+                    }
+                }
             }
             
             // Add left bracket

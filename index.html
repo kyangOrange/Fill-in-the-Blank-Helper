@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1>Fill in the Blank Review Helper</h1>
-            <p class="subtitle">Paste text with answers in parentheses and test yourself!</p>
+            <p class="subtitle">Paste text with answers filled in and test yourself!</p>
         </header>
         
         <div class="instructions">
@@ -31,6 +31,24 @@
         
         <div class="output-section">
             <div class="output-header">
+                <div class="bracket-selector">
+                    <label class="bracket-option">
+                        <input type="checkbox" id="chineseBrackets" checked>
+                        <span>Chinese （）</span>
+                    </label>
+                    <label class="bracket-option">
+                        <input type="checkbox" id="englishBrackets" checked>
+                        <span>English ()</span>
+                    </label>
+                    <label class="bracket-option">
+                        <input type="checkbox" id="curlyBrackets" checked>
+                        <span>Curly {}</span>
+                    </label>
+                    <label class="bracket-option">
+                        <input type="checkbox" id="squareBrackets" checked>
+                        <span>Square []</span>
+                    </label>
+                </div>
                 <button id="fullscreenBtn" class="btn-secondary">Fullscreen</button>
             </div>
             <div id="output" class="output-area">

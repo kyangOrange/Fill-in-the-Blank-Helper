@@ -157,8 +157,36 @@ header h1 {
 
 .output-header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.5rem;
+}
+
+.bracket-selector {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bracket-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4b5563;
+    user-select: none;
+}
+
+.bracket-option input[type="checkbox"] {
+    cursor: pointer;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #4908C2;
+}
+
+.bracket-option:hover {
+    color: #4908C2;
 }
 
 .output-footer {
