@@ -221,57 +221,84 @@ document.addEventListener('DOMContentLoaded', function() {
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 if (text) {
-                    // Find matches that overlap with this text node
                     const nodeStart = charOffset;
                     const nodeEnd = charOffset + text.length;
-                    const nodeMatches = matches
-                        .filter(m => m.start < nodeEnd && m.end > nodeStart && !processedMatches.has(m))
-                        .sort((a, b) => a.start - b.start);
                     
-                    if (nodeMatches.length === 0) {
+                    // Find all matches (processed or not) that overlap with this text node
+                    const allOverlappingMatches = matches.filter(m => m.start < nodeEnd && m.end > nodeStart);
+                    
+                    if (allOverlappingMatches.length === 0) {
                         // No matches, just add the text
                         parent.appendChild(document.createTextNode(text));
                     } else {
-                        // Process matches in this text node
-                        let lastIndex = 0;
+                        // Find unprocessed matches for this text node
+                        const nodeMatches = allOverlappingMatches
+                            .filter(m => !processedMatches.has(m))
+                            .sort((a, b) => a.start - b.start);
+                        
+                        // Build a list of ranges to skip (from processed matches)
+                        const skipRanges = allOverlappingMatches
+                            .filter(m => processedMatches.has(m))
+                            .map(m => ({
+                                start: Math.max(0, m.start - nodeStart),
+                                end: Math.min(text.length, m.end - nodeStart)
+                            }))
+                            .sort((a, b) => a.start - b.start);
+                        
+                        // Combine unprocessed matches with skip ranges
+                        const allRanges = [];
                         for (const match of nodeMatches) {
-                            const matchStart = Math.max(0, match.start - nodeStart);
-                            const matchEnd = Math.min(text.length, match.end - nodeStart);
-                            
-                            // Add text before match
-                            if (matchStart > lastIndex) {
-                                parent.appendChild(document.createTextNode(text.substring(lastIndex, matchStart)));
+                            allRanges.push({
+                                start: Math.max(0, match.start - nodeStart),
+                                end: Math.min(text.length, match.end - nodeStart),
+                                match: match,
+                                isSkip: false
+                            });
+                        }
+                        for (const skip of skipRanges) {
+                            allRanges.push({
+                                start: skip.start,
+                                end: skip.end,
+                                isSkip: true
+                            });
+                        }
+                        allRanges.sort((a, b) => a.start - b.start);
+                        
+                        // Process ranges
+                        let lastIndex = 0;
+                        for (const range of allRanges) {
+                            // Add text before this range
+                            if (range.start > lastIndex) {
+                                parent.appendChild(document.createTextNode(text.substring(lastIndex, range.start)));
                             }
                             
-                            // Only process if match hasn't been processed yet
-                            if (!processedMatches.has(match)) {
-                                // Handle match
-                                if (match.type === 'bracket') {
+                            if (!range.isSkip && range.match && !processedMatches.has(range.match)) {
+                                // Process the match
+                                if (range.match.type === 'bracket') {
                                     // Add left bracket
-                                    parent.appendChild(document.createTextNode(match.leftBracket));
+                                    parent.appendChild(document.createTextNode(range.match.leftBracket));
                                     // Create button
-                                    const button = createClickableButton(match.content, blankButtons.length);
+                                    const button = createClickableButton(range.match.content, blankButtons.length);
                                     blankButtons.push(button);
                                     parent.appendChild(button);
                                     // Add right bracket
-                                    parent.appendChild(document.createTextNode(match.rightBracket));
-                                } else if (match.type === 'capitalized') {
+                                    parent.appendChild(document.createTextNode(range.match.rightBracket));
+                                } else if (range.match.type === 'capitalized') {
                                     // Create button
-                                    const button = createClickableButton(match.content, blankButtons.length);
+                                    const button = createClickableButton(range.match.content, blankButtons.length);
                                     blankButtons.push(button);
                                     parent.appendChild(button);
                                 }
                                 
                                 // Mark match as processed
-                                processedMatches.add(match);
-                                lastIndex = matchEnd;
-                            } else {
-                                // Match already processed, skip
-                                lastIndex = matchEnd;
+                                processedMatches.add(range.match);
                             }
+                            // If it's a skip range, we don't add anything (the text is skipped)
+                            
+                            lastIndex = range.end;
                         }
                         
-                        // Add remaining text
+                        // Add remaining text after all ranges
                         if (lastIndex < text.length) {
                             parent.appendChild(document.createTextNode(text.substring(lastIndex)));
                         }
