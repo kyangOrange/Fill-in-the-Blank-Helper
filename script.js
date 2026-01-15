@@ -42,6 +42,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             processBtn.click();
         }
+        
+        // Tab key to paste example when input is blank
+        if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const currentText = textInput.textContent || textInput.innerText || '';
+            if (!currentText.trim()) {
+                e.preventDefault();
+                const exampleText = 'The capital of France is (Paris)';
+                textInput.textContent = exampleText;
+                // Move cursor to end
+                const range = document.createRange();
+                const selection = window.getSelection();
+                range.selectNodeContents(textInput);
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
     });
     
     // Custom dropdown functionality
