@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const tagName = element.tagName.toLowerCase();
             if (tagName === 'u') return true;
             const style = element.getAttribute('style') || '';
-            return style.includes('text-decoration:') && (style.includes('text-decoration:underline') || style.includes('text-decoration: underline'));
+            return style.includes('text-decoration') && (style.includes('underline') || style.match(/text-decoration[:\s]*underline/));
         }
         
         function walkNode(node, parent) {
