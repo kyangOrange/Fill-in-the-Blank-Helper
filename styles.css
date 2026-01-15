@@ -85,13 +85,13 @@ header h1 {
 
 #textInput {
     width: 100%;
-    min-height: 150px;
+    height: 150px;
     padding: 1rem;
     border: 2px solid #e5e7eb;
     border-radius: 0.5rem;
     font-size: 1rem;
     font-family: inherit;
-    resize: vertical;
+    resize: none;
     transition: border-color 0.3s ease;
     background: white;
     overflow-y: auto;
@@ -320,55 +320,34 @@ header h1 {
     word-wrap: break-word;
 }
 
-.main-content:fullscreen {
+.output-section:fullscreen {
     background: white;
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    width: 100vw;
-    height: 100vh;
 }
 
-.main-content:fullscreen .input-section {
-    margin-bottom: 1.5rem;
-    flex-shrink: 0;
-}
-
-.main-content:fullscreen .output-section {
-    margin-top: 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.main-content:fullscreen .output-header {
+.output-section:fullscreen .output-header {
     margin-bottom: 1rem;
-    flex-shrink: 0;
 }
 
-.main-content:fullscreen .output-area {
+.output-section:fullscreen .output-area {
     font-size: 1.5rem;
     padding: 2rem;
     flex: 1;
     overflow-y: auto;
 }
 
-.main-content:fullscreen .blank-counter {
+.output-section:fullscreen .blank-counter {
     top: 2rem;
     right: 2rem;
     font-size: 1.1rem;
     padding: 0.5rem 1rem;
 }
 
-.main-content:fullscreen .blank-button {
+.output-section:fullscreen .blank-button {
     font-size: 1.5rem;
     padding: 0.5rem 0.75rem;
-}
-
-.main-content:fullscreen .output-footer {
-    flex-shrink: 0;
-    margin-top: 1rem;
 }
 
 .blank-button {
