@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const italicSelected = document.getElementById('italicText').checked;
         const boldSelected = document.getElementById('boldText').checked;
         const highlightedSelected = document.getElementById('highlightedText').checked;
+        const underlinedSelected = document.getElementById('underlinedText').checked;
         
         // Build pattern based on selected bracket types
         const patternParts = [];
@@ -211,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Process the HTML structure with matches
         const blankButtons = [];
         processHTMLWithMatches(tempContainer, output, allMatches, blankButtons, {
-            italicSelected, boldSelected, highlightedSelected
+            italicSelected, boldSelected, highlightedSelected, underlinedSelected
         });
         
         // Update blank counter
@@ -288,6 +289,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tagName === 'mark') return true;
             const style = element.getAttribute('style') || '';
             return style.includes('background-color:') || style.includes('background:');
+        }
+        
+        // Helper function to check if element is underlined
+        function isUnderlined(element) {
+            if (!element.tagName) return false;
+            const tagName = element.tagName.toLowerCase();
+            if (tagName === 'u') return true;
+            const style = element.getAttribute('style') || '';
+            return style.includes('text-decoration:') && (style.includes('text-decoration:underline') || style.includes('text-decoration: underline'));
         }
         
         function walkNode(node, parent) {
