@@ -73,6 +73,30 @@ document.addEventListener('DOMContentLoaded', function() {
             checkbox.addEventListener('change', updateDropdownText);
         });
         
+        // Select All button
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                bracketCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                updateDropdownText();
+            });
+        }
+        
+        // Select None button
+        const selectNoneBtn = document.getElementById('selectNoneBtn');
+        if (selectNoneBtn) {
+            selectNoneBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                bracketCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateDropdownText();
+            });
+        }
+        
         // Initialize dropdown text
         updateDropdownText();
     }

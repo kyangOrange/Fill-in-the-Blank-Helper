@@ -224,6 +224,32 @@ header h1 {
     padding: 0.5rem 0;
 }
 
+.dropdown-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 0.25rem;
+}
+
+.dropdown-action-btn {
+    flex: 1;
+    padding: 0.4rem 0.8rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #4b5563;
+    transition: all 0.2s ease;
+}
+
+.dropdown-action-btn:hover {
+    background: #4908C2;
+    color: white;
+    border-color: #4908C2;
+}
+
 .dropdown-menu.show {
     display: block;
 }
