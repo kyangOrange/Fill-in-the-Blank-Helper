@@ -395,6 +395,12 @@ footer p {
     margin: 0;
 }
 
+footer p.privacy-note {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
