@@ -416,6 +416,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (shouldConvert && elementText.trim()) {
+                    // Calculate the element's text position by recursively walking its children
+                    // to find the start position, then use textContent length for end
+                    let elementStartOffset = charOffset;
+                    let elementCharCount = 0;
+                    function countChars(node) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            elementCharCount += (node.textContent || '').length;
+                        } else if (node.nodeType === Node.ELEMENT_NODE) {
+                            for (let child = node.firstChild; child; child = child.nextSibling) {
+                                countChars(child);
+                            }
+                        }
+                    }
+                    countChars(node);
+                    const elementEndOffset = elementStartOffset + elementCharCount;
+                    
+                    // Mark any capitalized matches that overlap with this element as processed
+                    for (const match of matches) {
+                        if (match.type === 'capitalized' && 
+                            match.start < elementEndOffset && 
+                            match.end > elementStartOffset) {
+                            processedMatches.add(match);
+                        }
+                    }
+                    
                     // Convert formatted element to button
                     // Preserve the formatting by storing the element's HTML structure
                     let elementHtml = elementText.trim();
@@ -441,6 +466,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const button = createClickableButton(elementText.trim(), blankButtons.length, elementHtml);
                     blankButtons.push(button);
                     parent.appendChild(button);
+                    
+                    // Update charOffset to skip over this element's text content
+                    charOffset = elementEndOffset;
                 } else {
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
