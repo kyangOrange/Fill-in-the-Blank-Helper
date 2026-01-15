@@ -17,15 +17,16 @@
         <div class="instructions">
             <p><strong>Instructions:</strong></p>
             <ul>
-                <li>Paste text with answers in parentheses (English (), Chinese （）, curly brackets {}, or square brackets [])</li>
+                <li>Paste text with answers in parentheses (English (), Chinese （）, curly brackets {}, or square brackets []), or as formatted text (capitalized words, italic, bold, highlighted, or underlined)</li>
+                <li>Select which types of answers to process as blanks using the dropdown menu (brackets, capitalized words, italic, bold, highlighted, or underlined text)</li>
                 <li>Click once on a blank to see the first character as a hint</li>
-                <li>Click again to see the full answer</li>
+                <li>Click again to see the full answer (original formatting is preserved)</li>
                 <li>Click a third time to reset to blank</li>
             </ul>
         </div>
         
         <div class="input-section">
-            <div id="textInput" class="text-input-editable" contenteditable="true" data-placeholder="Paste your text here with answers in parentheses, e.g., 'The capital of France is (Paris)', 'The capital of Japan is （Tokyo）', 'The capital of Germany is {Berlin}', or 'The capital of Spain is [Madrid]'"></div>
+            <div id="textInput" class="text-input-editable" contenteditable="true" data-placeholder="Paste your text here with answers in parentheses (e.g., 'The capital of France is (Paris)'), or as formatted text (capitalized, italic, bold, highlighted, or underlined). Original formatting will be preserved."></div>
             <button id="processBtn" class="btn-primary">Process Text</button>
         </div>
         
