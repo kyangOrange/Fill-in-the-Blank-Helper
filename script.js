@@ -310,9 +310,54 @@ document.addEventListener('DOMContentLoaded', function() {
         function isHighlighted(element) {
             if (!element.tagName) return false;
             const tagName = element.tagName.toLowerCase();
+            // Primary check: <mark> tag is the semantic HTML element for highlighting
             if (tagName === 'mark') return true;
+            
+            // Secondary check: inline style with background color (but exclude white/transparent/default)
             const style = element.getAttribute('style') || '';
-            return style.includes('background-color:') || style.includes('background:');
+            if (!style) return false;
+            
+            // Check for background-color with a visible highlight color
+            if (style.includes('background-color:')) {
+                const bgColorMatch = style.match(/background-color:\s*([^;]+)/i);
+                if (bgColorMatch) {
+                    const bgColor = bgColorMatch[1].trim().toLowerCase();
+                    // Exclude transparent, white, and default backgrounds
+                    const excludeColors = ['transparent', 'white', '#fff', '#ffffff', 
+                                          'rgb(255, 255, 255)', 'rgba(255, 255, 255', 
+                                          'inherit', 'initial', 'unset'];
+                    if (excludeColors.includes(bgColor)) {
+                        return false;
+                    }
+                    // Only return true if it's clearly a highlight color (has actual color value)
+                    if (bgColor && bgColor !== 'none') {
+                        return true;
+                    }
+                }
+            }
+            
+            // Check for background shorthand that includes a color
+            if (style.includes('background:')) {
+                const bgMatch = style.match(/background:\s*([^;]+)/i);
+                if (bgMatch) {
+                    const bgValue = bgMatch[1].trim().toLowerCase();
+                    // Exclude transparent, white, and default backgrounds
+                    const excludeValues = ['transparent', 'white', '#fff', '#ffffff', 
+                                          'rgb(255, 255, 255)', 'rgba(255, 255, 255', 
+                                          'inherit', 'initial', 'unset', 'none'];
+                    if (excludeValues.some(val => bgValue === val || bgValue.startsWith(val + ' '))) {
+                        return false;
+                    }
+                    // If it contains a color value (hex, rgb, rgba, color name), consider it highlighted
+                    if (/#[0-9a-f]{3,6}|rgb\(|rgba\(|hsl\(|hsla\(/.test(bgValue)) {
+                        // Additional check: make sure it's not white
+                        if (!bgValue.includes('255, 255, 255') && !bgValue.includes('#fff')) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
         
         // Helper function to check if element is underlined
