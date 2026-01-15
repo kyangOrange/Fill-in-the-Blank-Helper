@@ -320,34 +320,55 @@ header h1 {
     word-wrap: break-word;
 }
 
-.output-section:fullscreen {
+.main-content:fullscreen {
     background: white;
     padding: 2rem;
     display: flex;
     flex-direction: column;
+    width: 100vw;
+    height: 100vh;
 }
 
-.output-section:fullscreen .output-header {
+.main-content:fullscreen .input-section {
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.main-content:fullscreen .output-section {
+    margin-top: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.main-content:fullscreen .output-header {
     margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
-.output-section:fullscreen .output-area {
+.main-content:fullscreen .output-area {
     font-size: 1.5rem;
     padding: 2rem;
     flex: 1;
     overflow-y: auto;
 }
 
-.output-section:fullscreen .blank-counter {
+.main-content:fullscreen .blank-counter {
     top: 2rem;
     right: 2rem;
     font-size: 1.1rem;
     padding: 0.5rem 1rem;
 }
 
-.output-section:fullscreen .blank-button {
+.main-content:fullscreen .blank-button {
     font-size: 1.5rem;
     padding: 0.5rem 0.75rem;
+}
+
+.main-content:fullscreen .output-footer {
+    flex-shrink: 0;
+    margin-top: 1rem;
 }
 
 .blank-button {

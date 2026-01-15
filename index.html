@@ -25,12 +25,13 @@
             </ul>
         </div>
         
-        <div class="input-section">
-            <div id="textInput" class="text-input-editable" contenteditable="true" data-placeholder="Paste your text here with answers in parentheses (e.g., 'The capital of France is (Paris)'), or as formatted text (capitalized, italic, bold, highlighted, or underlined). Original formatting will be preserved."></div>
-            <button id="processBtn" class="btn-primary">Process Text</button>
-        </div>
-        
-        <div class="output-section">
+        <div id="main-content" class="main-content">
+            <div class="input-section">
+                <div id="textInput" class="text-input-editable" contenteditable="true" data-placeholder="Paste your text here with answers in parentheses (e.g., 'The capital of France is (Paris)'), or as formatted text (capitalized, italic, bold, highlighted, or underlined). Original formatting will be preserved."></div>
+                <button id="processBtn" class="btn-primary">Process Text</button>
+            </div>
+            
+            <div class="output-section">
             <div class="output-header">
                 <div class="bracket-selector-wrapper">
                     <label class="bracket-selector-label">Select types to process as blanks:</label>
@@ -90,6 +91,7 @@
             <div class="output-footer">
                 <button id="fullscreenBtn" class="btn-secondary">Fullscreen</button>
                 <button id="resetBtn" class="btn-reset">Reset</button>
+            </div>
             </div>
         </div>
         

@@ -701,9 +701,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fullscreen functionality
     function toggleFullscreen() {
-        const outputSection = document.querySelector('.output-section');
+        const mainContent = document.getElementById('main-content');
         if (!document.fullscreenElement) {
-            outputSection.requestFullscreen().catch(err => {
+            mainContent.requestFullscreen().catch(err => {
                 alert('Error attempting to enable fullscreen: ' + err.message);
             });
         } else {
