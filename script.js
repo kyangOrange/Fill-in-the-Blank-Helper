@@ -410,6 +410,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formatOptions.highlightedSelected && isHighlighted(node)) {
                     shouldConvert = true;
                     formatType = 'highlighted';
+                } else if (formatOptions.underlinedSelected && isUnderlined(node)) {
+                    shouldConvert = true;
+                    formatType = 'underlined';
                 }
                 
                 if (shouldConvert && elementText.trim()) {
@@ -425,6 +428,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         elementHtml = `<b>${elementHtml}</b>`;
                     } else if (tagName === 'mark') {
                         elementHtml = `<mark>${elementHtml}</mark>`;
+                    } else if (tagName === 'u') {
+                        elementHtml = `<u>${elementHtml}</u>`;
                     } else {
                         // For elements with inline styles, preserve the style attribute
                         const style = node.getAttribute('style') || '';
