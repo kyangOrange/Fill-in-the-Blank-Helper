@@ -349,11 +349,22 @@ header h1 {
 }
 
 .color-preview {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #d1d5db;
-    border-radius: 0.125rem;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-preview.color-selected {
+    border-color: #4908C2;
+    border-width: 3px;
+    box-shadow: 0 0 0 2px rgba(73, 8, 194, 0.2);
+}
+
+.color-preview:not(.color-selected) {
+    opacity: 0.5;
 }
 
 .color-item input[type="color"] {

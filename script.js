@@ -141,14 +141,124 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Color picker functionality
+        // Color detection functionality
         const colorTextCheckbox = document.getElementById('colorText');
         const colorPickerSection = document.getElementById('colorPickerSection');
         const colorList = document.getElementById('colorList');
-        const addColorBtn = document.getElementById('addColorBtn');
         let selectedColors = []; // Store selected colors as hex values
         
-        function addColorItem(color = '#000000') {
+        // Function to detect all colors in HTML content
+        function detectColorsInText(htmlContent) {
+            const colors = new Set();
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            // Function to extract color from style attribute
+            function extractColorFromStyle(style) {
+                if (!style) return null;
+                const colorMatch = style.match(/color:\s*([^;]+)/i);
+                if (colorMatch) {
+                    return colorMatch[1].trim();
+                }
+                return null;
+            }
+            
+            // Function to normalize color to hex format
+            function normalizeToHex(color) {
+                if (!color) return null;
+                color = color.trim().toLowerCase();
+                
+                // Already hex
+                if (color.startsWith('#')) {
+                    if (color.length === 4) {
+                        // Convert #rgb to #rrggbb
+                        return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
+                    }
+                    return color.length === 7 ? color : null;
+                }
+                
+                // RGB/RGBA format
+                const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                if (rgbMatch) {
+                    const r = parseInt(rgbMatch[1]);
+                    const g = parseInt(rgbMatch[2]);
+                    const b = parseInt(rgbMatch[3]);
+                    return '#' + [r, g, b].map(x => {
+                        const hex = x.toString(16);
+                        return hex.length === 1 ? '0' + hex : hex;
+                    }).join('');
+                }
+                
+                // Named colors (basic set)
+                const namedColors = {
+                    'black': '#000000', 'white': '#ffffff', 'red': '#ff0000',
+                    'green': '#008000', 'blue': '#0000ff', 'yellow': '#ffff00',
+                    'cyan': '#00ffff', 'magenta': '#ff00ff', 'orange': '#ffa500',
+                    'purple': '#800080', 'pink': '#ffc0cb', 'brown': '#a52a2a',
+                    'gray': '#808080', 'grey': '#808080'
+                };
+                if (namedColors[color]) {
+                    return namedColors[color];
+                }
+                
+                return null;
+            }
+            
+            // Walk through all elements
+            function walkElements(element) {
+                if (!element) return;
+                
+                // Check style attribute
+                const style = element.getAttribute('style');
+                if (style) {
+                    const color = extractColorFromStyle(style);
+                    if (color) {
+                        const hexColor = normalizeToHex(color);
+                        if (hexColor) {
+                            colors.add(hexColor);
+                        }
+                    }
+                }
+                
+                // Check color attribute (deprecated but might be used)
+                const colorAttr = element.getAttribute('color');
+                if (colorAttr) {
+                    const hexColor = normalizeToHex(colorAttr);
+                    if (hexColor) {
+                        colors.add(hexColor);
+                    }
+                }
+                
+                // Check font tag with color
+                if (element.tagName && element.tagName.toLowerCase() === 'font') {
+                    const fontColor = element.getAttribute('color');
+                    if (fontColor) {
+                        const hexColor = normalizeToHex(fontColor);
+                        if (hexColor) {
+                            colors.add(hexColor);
+                        }
+                    }
+                }
+                
+                // Recursively check children
+                for (let child of element.children) {
+                    walkElements(child);
+                }
+            }
+            
+            walkElements(tempDiv);
+            return Array.from(colors);
+        }
+        
+        function addColorItem(color) {
+            // Check if color already exists
+            const existingColors = colorList.querySelectorAll('.color-preview');
+            for (let existing of existingColors) {
+                if (existing.getAttribute('data-color') === color) {
+                    return; // Color already exists, don't add duplicate
+                }
+            }
+            
             const colorItem = document.createElement('div');
             colorItem.className = 'color-item';
             
@@ -156,31 +266,30 @@ document.addEventListener('DOMContentLoaded', function() {
             colorPreview.className = 'color-preview';
             colorPreview.style.backgroundColor = color;
             colorPreview.setAttribute('data-color', color);
+            colorPreview.setAttribute('data-selected', 'true'); // Default to selected
             
-            const colorInput = document.createElement('input');
-            colorInput.type = 'color';
-            colorInput.value = color;
-            colorInput.addEventListener('change', function(e) {
-                const newColor = e.target.value;
-                colorPreview.style.backgroundColor = newColor;
-                colorPreview.setAttribute('data-color', newColor);
+            // Toggle selection on click
+            colorPreview.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isSelected = colorPreview.getAttribute('data-selected') === 'true';
+                colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
+                colorPreview.classList.toggle('color-selected', !isSelected);
                 updateSelectedColors();
             });
             
-            colorPreview.addEventListener('click', function() {
-                colorInput.click();
-            });
+            // Set initial selected state
+            colorPreview.classList.add('color-selected');
             
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-color-btn';
             removeBtn.innerHTML = '×';
-            removeBtn.addEventListener('click', function() {
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 colorItem.remove();
                 updateSelectedColors();
             });
             
             colorItem.appendChild(colorPreview);
-            colorItem.appendChild(colorInput);
             colorItem.appendChild(removeBtn);
             colorList.appendChild(colorItem);
             
@@ -189,27 +298,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function updateSelectedColors() {
             selectedColors = [];
-            const colorPreviews = colorList.querySelectorAll('.color-preview');
+            const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
             colorPreviews.forEach(preview => {
                 selectedColors.push(preview.getAttribute('data-color'));
             });
         }
         
-        if (addColorBtn) {
-            addColorBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                addColorItem();
+        // Show color section when checkbox is checked and detect colors when processing
+        if (colorTextCheckbox) {
+            colorTextCheckbox.addEventListener('change', function() {
+                if (colorPickerSection) {
+                    colorPickerSection.style.display = this.checked ? 'block' : 'none';
+                }
             });
-        }
-        
-        // Initialize with one color if color checkbox is checked
-        if (colorTextCheckbox && colorTextCheckbox.checked) {
-            if (colorPickerSection) {
-                colorPickerSection.style.display = 'block';
-            }
-            if (colorList && colorList.children.length === 0) {
-                addColorItem();
-            }
         }
         
         // Select All button
