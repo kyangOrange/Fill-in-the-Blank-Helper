@@ -416,10 +416,12 @@ header h1 {
     transition: all 0.2s ease;
     line-height: 1.8;
     vertical-align: baseline;
-    display: inline;
+    display: inline-block;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;
+    max-width: calc(100% - 0.25rem);
+    box-sizing: border-box;
 }
 
 .blank-button.correct-answer {
@@ -456,11 +458,13 @@ header h1 {
 
 
 .blank-button-wrapper {
-    display: inline;
+    display: inline-block;
     vertical-align: baseline;
     line-height: 1.8;
     word-break: break-word;
     overflow-wrap: break-word;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .feedback-buttons {
