@@ -351,25 +351,18 @@ header h1 {
 }
 
 .blank-button {
-    background: rgba(0, 0, 0, 0.03);
-    border: none;
+    all: unset;
+    display: inline;
     color: #2563eb;
     cursor: pointer;
     font-size: inherit;
     font-family: inherit;
-    padding: 0;
     margin: 0 0.125rem;
+    background: rgba(0, 0, 0, 0.03);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
-    display: inline;
-    text-align: left;
-    vertical-align: baseline;
     line-height: 1.8;
-    box-sizing: content-box;
-    overflow: visible;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    vertical-align: baseline;
 }
 
 .blank-button:hover {
