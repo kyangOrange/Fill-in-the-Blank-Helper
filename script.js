@@ -309,19 +309,96 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Show color section when checkbox is checked and detect colors when processing
+        // Show color section when checkbox is checked and automatically detect colors
         if (colorTextCheckbox) {
             colorTextCheckbox.addEventListener('change', function() {
                 if (colorPickerSection) {
                     colorPickerSection.style.display = this.checked ? 'block' : 'none';
-                    // If checked and no colors yet, show a message
-                    if (this.checked && colorList && colorList.children.length === 0) {
-                        const msg = document.createElement('div');
-                        msg.style.padding = '0.5rem';
-                        msg.style.color = '#6b7280';
-                        msg.style.fontSize = '0.85rem';
-                        msg.textContent = 'Process text to detect colors';
-                        colorList.appendChild(msg);
+                    // If checked, automatically detect colors from current input text
+                    if (this.checked && colorList) {
+                        const htmlContent = textInput.innerHTML;
+                        if (htmlContent) {
+                            const detectedColors = detectColorsInText(htmlContent);
+                            // Clear existing colors and add detected ones
+                            colorList.innerHTML = '';
+                            if (detectedColors && detectedColors.length > 0) {
+                                detectedColors.forEach(color => {
+                                    // Create color item directly
+                                    const existingColors = colorList.querySelectorAll('.color-preview');
+                                    let colorExists = false;
+                                    for (let existing of existingColors) {
+                                        if (existing.getAttribute('data-color') === color) {
+                                            colorExists = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!colorExists) {
+                                        const colorItem = document.createElement('div');
+                                        colorItem.className = 'color-item';
+                                        
+                                        const colorPreview = document.createElement('div');
+                                        colorPreview.className = 'color-preview color-selected';
+                                        colorPreview.style.backgroundColor = color;
+                                        colorPreview.setAttribute('data-color', color);
+                                        colorPreview.setAttribute('data-selected', 'true');
+                                        
+                                        colorPreview.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            const isSelected = colorPreview.getAttribute('data-selected') === 'true';
+                                            colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
+                                            colorPreview.classList.toggle('color-selected', !isSelected);
+                                            // Update selected colors
+                                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
+                                            selectedColors = [];
+                                            colorPreviews.forEach(preview => {
+                                                selectedColors.push(preview.getAttribute('data-color'));
+                                            });
+                                        });
+                                        
+                                        const removeBtn = document.createElement('button');
+                                        removeBtn.className = 'remove-color-btn';
+                                        removeBtn.innerHTML = '×';
+                                        removeBtn.addEventListener('click', function(e) {
+                                            e.stopPropagation();
+                                            colorItem.remove();
+                                            // Update selected colors
+                                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
+                                            selectedColors = [];
+                                            colorPreviews.forEach(preview => {
+                                                selectedColors.push(preview.getAttribute('data-color'));
+                                            });
+                                        });
+                                        
+                                        colorItem.appendChild(colorPreview);
+                                        colorItem.appendChild(removeBtn);
+                                        colorList.appendChild(colorItem);
+                                    }
+                                });
+                                // Update selected colors
+                                const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+                                selectedColors = [];
+                                colorPreviews.forEach(preview => {
+                                    selectedColors.push(preview.getAttribute('data-color'));
+                                });
+                            } else {
+                                // Show message if no colors detected
+                                const noColorsMsg = document.createElement('div');
+                                noColorsMsg.style.padding = '0.5rem';
+                                noColorsMsg.style.color = '#6b7280';
+                                noColorsMsg.style.fontSize = '0.85rem';
+                                noColorsMsg.textContent = 'No colors detected in text';
+                                colorList.appendChild(noColorsMsg);
+                            }
+                        } else {
+                            // Show message if no text
+                            const noTextMsg = document.createElement('div');
+                            noTextMsg.style.padding = '0.5rem';
+                            noTextMsg.style.color = '#6b7280';
+                            noTextMsg.style.fontSize = '0.85rem';
+                            noTextMsg.textContent = 'Paste text first to detect colors';
+                            colorList.appendChild(noTextMsg);
+                        }
                     }
                 }
             });
@@ -371,87 +448,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function processText(text, htmlContent) {
         output.innerHTML = '';
         
-        // Detect colors in text if color option is selected
+        // Get selected colors from the color list (already detected when checkbox was checked)
         const colorTextCheckbox = document.getElementById('colorText');
-        const colorPickerSection = document.getElementById('colorPickerSection');
         const colorList = document.getElementById('colorList');
         if (colorTextCheckbox && colorTextCheckbox.checked && colorList) {
-            // Make sure color section is visible
-            if (colorPickerSection) {
-                colorPickerSection.style.display = 'block';
-            }
-            const detectedColors = detectColorsInText(htmlContent);
-            // Clear existing colors and add detected ones
-            colorList.innerHTML = '';
-            if (detectedColors && detectedColors.length > 0) {
-                detectedColors.forEach(color => {
-                    // Create color item directly here to avoid scope issues
-                    const existingColors = colorList.querySelectorAll('.color-preview');
-                    let colorExists = false;
-                    for (let existing of existingColors) {
-                        if (existing.getAttribute('data-color') === color) {
-                            colorExists = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!colorExists) {
-                        const colorItem = document.createElement('div');
-                        colorItem.className = 'color-item';
-                        
-                        const colorPreview = document.createElement('div');
-                        colorPreview.className = 'color-preview color-selected';
-                        colorPreview.style.backgroundColor = color;
-                        colorPreview.setAttribute('data-color', color);
-                        colorPreview.setAttribute('data-selected', 'true');
-                        
-                        colorPreview.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const isSelected = colorPreview.getAttribute('data-selected') === 'true';
-                            colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
-                            colorPreview.classList.toggle('color-selected', !isSelected);
-                            // Update selected colors
-                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
-                            selectedColors = [];
-                            colorPreviews.forEach(preview => {
-                                selectedColors.push(preview.getAttribute('data-color'));
-                            });
-                        });
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-color-btn';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            colorItem.remove();
-                            // Update selected colors
-                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
-                            selectedColors = [];
-                            colorPreviews.forEach(preview => {
-                                selectedColors.push(preview.getAttribute('data-color'));
-                            });
-                        });
-                        
-                        colorItem.appendChild(colorPreview);
-                        colorItem.appendChild(removeBtn);
-                        colorList.appendChild(colorItem);
-                    }
-                });
-                // Update selected colors - access from outer scope
-                const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
-                selectedColors = [];
-                colorPreviews.forEach(preview => {
-                    selectedColors.push(preview.getAttribute('data-color'));
-                });
-            } else {
-                // Show message if no colors detected
-                const noColorsMsg = document.createElement('div');
-                noColorsMsg.style.padding = '0.5rem';
-                noColorsMsg.style.color = '#6b7280';
-                noColorsMsg.style.fontSize = '0.85rem';
-                noColorsMsg.textContent = 'No colors detected in text';
-                colorList.appendChild(noColorsMsg);
-            }
+            // Update selected colors from the current state of the color list
+            const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+            selectedColors = [];
+            colorPreviews.forEach(preview => {
+                selectedColors.push(preview.getAttribute('data-color'));
+            });
         }
         
         // Add blank counter and accuracy counter to output area
