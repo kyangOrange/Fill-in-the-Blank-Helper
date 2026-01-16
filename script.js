@@ -848,6 +848,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Helper function to check if any ancestor in the source tree has selected color
+        function hasColoredAncestor(node) {
+            if (!node || !formatOptions.colorSelected || !formatOptions.selectedColors) return false;
+            let current = node.parentNode;
+            while (current && current.nodeType === Node.ELEMENT_NODE) {
+                if (hasSelectedColor(current, formatOptions.selectedColors)) {
+                    return true;
+                }
+                current = current.parentNode;
+            }
+            return false;
+        }
+        
         function walkNode(node, parent, parentHasSelectedColor = false) {
             // Check if SOURCE node's parent (in source tree) has selected color
             if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
@@ -855,18 +868,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (node.nodeType === Node.TEXT_NODE) {
-                // Skip text nodes if parent (in source tree) has selected color (parent will be processed as whole)
-                // Just update charOffset but don't add to output - parent element will include this text
-                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
-                    const text = node.textContent;
-                    if (text) {
-                        charOffset += text.length;
-                    }
-                    return;
-                }
-                
-                // Also check if this text node's direct parent element has color
-                if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors)) {
+                // Skip text nodes if ANY ancestor (in source tree) has selected color (ancestor will be processed as whole)
+                // Check both the parameter and directly check ancestors
+                const hasColoredParent = parentHasSelectedColor || hasColoredAncestor(node);
+                if (hasColoredParent && formatOptions.colorSelected && formatOptions.selectedColors) {
                     const text = node.textContent;
                     if (text) {
                         charOffset += text.length;
@@ -972,10 +977,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 let shouldConvert = false;
                 let formatType = null;
                 
-                // FIRST: Check if SOURCE node's parent already has selected color (parent will be converted as whole)
-                // Skip processing this element and all its descendants if parent has color
-                const sourceParentHasColor = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors);
-                if (sourceParentHasColor) {
+                // FIRST: Check if ANY ancestor in source tree has selected color (ancestor will be converted as whole)
+                // Skip processing this element and all its descendants if any ancestor has color
+                const hasColoredParent = hasColoredAncestor(node);
+                if (hasColoredParent) {
                     // Parent has color, so just count characters and skip - parent will include this
                     let elementCharCount = 0;
                     function countAllChars(node) {
