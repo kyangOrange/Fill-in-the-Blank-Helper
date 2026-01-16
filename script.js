@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const resetBtn = document.getElementById('resetBtn');
     const retestBtn = document.getElementById('retestBtn');
-    const retestBtn = document.getElementById('retestBtn');
     
     // Process button click handler
     processBtn.addEventListener('click', function() {
@@ -31,6 +30,46 @@ document.addEventListener('DOMContentLoaded', function() {
             if (document.fullscreenElement) {
                 document.exitFullscreen();
             }
+        });
+    }
+    
+    // Retest button click handler
+    if (retestBtn) {
+        retestBtn.addEventListener('click', function() {
+            // Reset all buttons to blank state and clear feedback
+            const buttons = output.querySelectorAll('.blank-button');
+            buttons.forEach(button => {
+                // Reset to blank state
+                button.textContent = '　　';
+                button.setAttribute('data-state', 'blank');
+                button.classList.remove('hint-state', 'answer-state', 'correct-answer', 'wrong-answer');
+                
+                // Remove feedback attributes
+                button.removeAttribute('data-answered');
+                button.removeAttribute('data-correct');
+                
+                // Hide feedback buttons
+                const wrapper = button.closest('.blank-button-wrapper');
+                if (wrapper) {
+                    const feedbackContainer = wrapper.querySelector('.feedback-buttons');
+                    if (feedbackContainer) {
+                        feedbackContainer.style.display = 'none';
+                    }
+                    const checkButton = wrapper.querySelector('.feedback-check');
+                    const xButton = wrapper.querySelector('.feedback-x');
+                    if (checkButton) checkButton.classList.remove('active');
+                    if (xButton) xButton.classList.remove('active');
+                }
+            });
+            
+            // Clear accuracy counter
+            const accuracyElement = document.getElementById('accuracyCounter');
+            if (accuracyElement) {
+                accuracyElement.textContent = '';
+            }
+            
+            // Update blank counter
+            updateBlankCounterFromOutput();
         });
     }
     
