@@ -359,8 +359,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Detect colors in text if color option is selected
         const colorTextCheckbox = document.getElementById('colorText');
+        const colorPickerSection = document.getElementById('colorPickerSection');
         const colorList = document.getElementById('colorList');
         if (colorTextCheckbox && colorTextCheckbox.checked && colorList) {
+            // Make sure color section is visible
+            if (colorPickerSection) {
+                colorPickerSection.style.display = 'block';
+            }
             const detectedColors = detectColorsInText(htmlContent);
             // Clear existing colors and add detected ones
             colorList.innerHTML = '';
@@ -368,6 +373,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 detectedColors.forEach(color => {
                     addColorItem(color);
                 });
+            } else {
+                // Show message if no colors detected
+                const noColorsMsg = document.createElement('div');
+                noColorsMsg.style.padding = '0.5rem';
+                noColorsMsg.style.color = '#6b7280';
+                noColorsMsg.style.fontSize = '0.85rem';
+                noColorsMsg.textContent = 'No colors detected in text';
+                colorList.appendChild(noColorsMsg);
             }
         }
         
