@@ -900,7 +900,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show first character as hint with formatting preserved
                 let firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
                 firstCharHtml = convertBlockToInline(firstCharHtml);
-                button.innerHTML = firstCharHtml;
+                // Add blank spaces after the hint to maintain original button size
+                const blankText = generateBlankText(content);
+                const hintWithPadding = firstCharHtml + blankText.substring(1);
+                button.innerHTML = hintWithPadding;
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
