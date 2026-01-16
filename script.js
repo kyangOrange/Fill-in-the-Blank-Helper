@@ -314,6 +314,15 @@ document.addEventListener('DOMContentLoaded', function() {
             colorTextCheckbox.addEventListener('change', function() {
                 if (colorPickerSection) {
                     colorPickerSection.style.display = this.checked ? 'block' : 'none';
+                    // If checked and no colors yet, show a message
+                    if (this.checked && colorList && colorList.children.length === 0) {
+                        const msg = document.createElement('div');
+                        msg.style.padding = '0.5rem';
+                        msg.style.color = '#6b7280';
+                        msg.style.fontSize = '0.85rem';
+                        msg.textContent = 'Process text to detect colors';
+                        colorList.appendChild(msg);
+                    }
                 }
             });
         }
