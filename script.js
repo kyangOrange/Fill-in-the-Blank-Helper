@@ -666,6 +666,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const processedMatches = new Set(); // Track which matches have been processed
         formatOptions = formatOptions || {};
         
+        // PRE-SCAN: Mark all elements with selected colors so we can skip their children
+        const coloredElements = new Set();
+        if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
+            function markColoredElements(node) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (hasSelectedColor(node, formatOptions.selectedColors)) {
+                        coloredElements.add(node);
+                    }
+                    // Recursively mark all children
+                    for (let child = node.firstChild; child; child = child.nextSibling) {
+                        markColoredElements(child);
+                    }
+                }
+            }
+            markColoredElements(sourceNode);
+        }
+        
+        // Helper function to check if node or any ancestor is marked as colored
+        function isInColoredElement(node) {
+            let current = node;
+            while (current && current.nodeType === Node.ELEMENT_NODE) {
+                if (coloredElements.has(current)) {
+                    return true;
+                }
+                current = current.parentNode;
+            }
+            return false;
+        }
+        
+        // Helper function to find the nearest colored ancestor
+        function getColoredAncestor(node) {
+            let current = node.parentNode;
+            while (current && current.nodeType === Node.ELEMENT_NODE) {
+                if (coloredElements.has(current)) {
+                    return current;
+                }
+                current = current.parentNode;
+            }
+            return null;
+        }
+        
         // Helper function to extract HTML content from source structure at a specific range
         function extractHTMLContent(start, end) {
             let currentOffset = 0;
@@ -861,17 +902,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        function walkNode(node, parent, parentHasSelectedColor = false) {
-            // Check if SOURCE node's parent (in source tree) has selected color
-            if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
-                parentHasSelectedColor = hasSelectedColor(node.parentNode, formatOptions.selectedColors);
-            }
-            
+        function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
-                // Skip text nodes if ANY ancestor (in source tree) has selected color (ancestor will be processed as whole)
-                // Check both the parameter and directly check ancestors
-                const hasColoredParent = parentHasSelectedColor || hasColoredAncestor(node);
-                if (hasColoredParent && formatOptions.colorSelected && formatOptions.selectedColors) {
+                // Skip text nodes if they're inside a colored element (will be processed as part of parent)
+                if (isInColoredElement(node)) {
                     const text = node.textContent;
                     if (text) {
                         charOffset += text.length;
@@ -974,14 +1008,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 const elementText = node.textContent || '';
-                let shouldConvert = false;
-                let formatType = null;
                 
-                // FIRST: Check if ANY ancestor in source tree has selected color (ancestor will be converted as whole)
-                // Skip processing this element and all its descendants if any ancestor has color
-                const hasColoredParent = hasColoredAncestor(node);
-                if (hasColoredParent) {
-                    // Parent has color, so just count characters and skip - parent will include this
+                // FIRST: Check if this element is inside a colored ancestor - skip entirely
+                const coloredAncestor = getColoredAncestor(node);
+                if (coloredAncestor) {
+                    // This element is inside a colored ancestor, skip it - ancestor will be processed as whole
                     let elementCharCount = 0;
                     function countAllChars(node) {
                         if (node.nodeType === Node.TEXT_NODE) {
@@ -994,12 +1025,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     countAllChars(node);
                     charOffset += elementCharCount;
-                    // Don't add anything to output - parent will include this
                     return;
                 }
                 
                 // SECOND: Check if element itself has selected color - if so, convert entire element as one
-                if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
+                let shouldConvert = false;
+                let formatType = null;
+                
+                if (coloredElements.has(node)) {
                     shouldConvert = true;
                     formatType = 'color';
                 } else if (formatOptions.italicSelected && isItalic(node)) {
@@ -1084,17 +1117,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
-                    // Check if this element has selected color (to pass to children)
-                    const nodeHasSelectedColor = formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors);
-                    const shouldSkipChildren = parentHasSelectedColor || nodeHasSelectedColor;
-                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
                     
-                    // Recursively process child nodes, but skip checking children if this element has selected color
+                    // Recursively process child nodes
                     for (let child = node.firstChild; child; child = child.nextSibling) {
-                        walkNode(child, clonedElement, shouldSkipChildren);
+                        walkNode(child, clonedElement);
                     }
                 }
             }
@@ -1102,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Start walking from sourceNode's children
         for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
-            walkNode(child, targetParent, false);
+            walkNode(child, targetParent);
         }
     }
     
