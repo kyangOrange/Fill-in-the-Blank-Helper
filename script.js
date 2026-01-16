@@ -488,8 +488,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const underlinedSelected = document.getElementById('underlinedText').checked;
         const colorSelected = document.getElementById('colorText').checked;
         
-        // Get selected colors
-        const colorPreviews = document.querySelectorAll('.color-preview');
+        // Get selected colors (only those with data-selected="true")
+        const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
         const selectedColors = [];
         colorPreviews.forEach(preview => {
             selectedColors.push(preview.getAttribute('data-color'));
@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Process the HTML structure with matches
         const blankButtons = [];
         processHTMLWithMatches(tempContainer, output, allMatches, blankButtons, {
-            italicSelected, boldSelected, highlightedSelected, underlinedSelected
+            italicSelected, boldSelected, highlightedSelected, underlinedSelected, colorSelected, selectedColors
         });
         
         // Update blank counter
