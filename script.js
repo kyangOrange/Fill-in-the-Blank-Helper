@@ -685,7 +685,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Helper function to check if node or any ancestor is marked as colored
         function isInColoredElement(node) {
-            let current = node;
+            // For text nodes, check parent
+            // For elements, check self and then ancestors
+            let current = (node.nodeType === Node.TEXT_NODE) ? node.parentNode : node;
             while (current && current.nodeType === Node.ELEMENT_NODE) {
                 if (coloredElements.has(current)) {
                     return true;
@@ -697,6 +699,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Helper function to find the nearest colored ancestor
         function getColoredAncestor(node) {
+            // For text nodes, start from parent
+            // For elements, start from parent (since we check element itself separately)
             let current = node.parentNode;
             while (current && current.nodeType === Node.ELEMENT_NODE) {
                 if (coloredElements.has(current)) {
@@ -705,6 +709,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 current = current.parentNode;
             }
             return null;
+        }
+        
+        // Helper function to check if a node is a descendant of a specific colored element
+        function isDescendantOf(node, coloredElement) {
+            let current = node.parentNode;
+            while (current && current.nodeType === Node.ELEMENT_NODE) {
+                if (current === coloredElement) {
+                    return true;
+                }
+                current = current.parentNode;
+            }
+            return false;
         }
         
         // Helper function to extract HTML content from source structure at a specific range
