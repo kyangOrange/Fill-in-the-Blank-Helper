@@ -757,13 +757,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to generate blank text matching content length
     function generateBlankText(content) {
         if (!content) return '　　';
-        // Use a combination of full-width and regular spaces to approximate length
-        // This allows the blank to wrap naturally like the answer text
+        // Use regular spaces that will wrap naturally like the answer text
+        // Approximate visual width: full-width space ≈ 2 regular spaces
         const length = content.length;
-        // Use mostly full-width spaces but allow wrapping
-        const fullWidthCount = Math.max(2, Math.floor(length * 0.8));
-        const regularSpaces = ' '.repeat(Math.max(0, length - fullWidthCount));
-        return '　'.repeat(fullWidthCount) + regularSpaces;
+        // Use regular spaces so it wraps at the same points as the answer
+        return ' '.repeat(Math.max(2, length * 2));
     }
     
     function createClickableButton(content, index, htmlContent) {
