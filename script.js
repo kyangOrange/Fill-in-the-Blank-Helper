@@ -849,13 +849,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function walkNode(node, parent, parentHasSelectedColor = false) {
-            // Check if parent has selected color
-            if (!parentHasSelectedColor && parent && parent.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
-                parentHasSelectedColor = hasSelectedColor(parent, formatOptions.selectedColors);
+            // Check if SOURCE node's parent (in source tree) has selected color
+            if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
+                parentHasSelectedColor = hasSelectedColor(node.parentNode, formatOptions.selectedColors);
             }
             
             if (node.nodeType === Node.TEXT_NODE) {
-                // Skip text nodes if parent has selected color (parent will be processed as whole)
+                // Skip text nodes if parent (in source tree) has selected color (parent will be processed as whole)
                 // Just update charOffset but don't add to output - parent element will include this text
                 if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
                     const text = node.textContent;
@@ -959,8 +959,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Skip if parent already has selected color (parent will be converted as whole)
-                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
+                // Skip if SOURCE node's parent already has selected color (parent will be converted as whole)
+                // Check the actual parent in the source tree
+                const sourceParentHasColor = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors);
+                if (sourceParentHasColor) {
                     // Parent has color, so just clone and walk children without checking this element individually
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
