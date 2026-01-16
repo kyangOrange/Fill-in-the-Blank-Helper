@@ -35,13 +35,7 @@ A web application that helps students review by hiding answers in various format
 
 2. **Select answer formats** (optional):
    - Use the dropdown menu above the output area to select which answer formats should be processed as blanks
-   - **Bracket options**: Chinese `（）`, English `()`, Curly `{}`, and Square `[]`
-   - **Formatting options**: Capitalized Words (ALL CAPS), Italic Text, Bold Text, Highlighted Text, Underlined Text, and Color
-   - **Color option**: When selected, the application automatically detects all colors present in your text
-     - Detected colors appear as colored boxes below the dropdown
-     - Click on a color to select/deselect it (selected colors have a purple border)
-     - Only selected colors will be processed as blanks
-     - Click the × button to remove a color from the list
+   - For colored text: Select the "Color" option to detect all colors in your text, then click on the colors you want to process as blanks
    - Use "Select All" or "Select None" buttons for quick selection
    - None are selected by default - select the formats you want to use
    - Only selected formats will be converted to interactive blanks
@@ -57,9 +51,8 @@ A web application that helps students review by hiding answers in various format
    - View the accuracy counter below the blank counter (shows your accuracy percentage once you start answering)
    - Click on the blank buttons to reveal hints and answers:
      - First click: Shows the first character of the answer (preserving original formatting)
-     - Second click: Shows the full answer (preserving original formatting)
-     - When the full answer is shown, feedback buttons (✓ and ✗) appear to mark if you got it correct or not
-     - Third click: Clears the answer and hides the feedback buttons (feedback colors persist)
+     - Second click: Shows the full answer (preserving original formatting). Feedback buttons ✓ and ✗ will appear, you can mark independently if you got it right or wrong
+     - Third click: Clears the answer and resets
    - Use the "Fullscreen" button to view the processed text in fullscreen mode
    - Use the "Retest" button to reset all answers and accuracy while keeping the same text (useful for practicing again)
    - Use the "Reset" button to clear all input and output
