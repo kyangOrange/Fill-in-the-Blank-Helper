@@ -363,13 +363,14 @@ header h1 {
     transition: all 0.2s ease;
     display: inline;
     min-width: 0;
-    min-height: 0;
     text-align: left;
     vertical-align: baseline;
-    line-height: 1.8;
-    height: auto;
-    box-sizing: border-box;
+    line-height: inherit;
+    box-sizing: content-box;
     overflow: visible;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .blank-button:hover {
