@@ -355,16 +355,18 @@ header h1 {
     border: none;
     color: #2563eb;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: inherit;
     font-family: inherit;
-    padding: 0.25rem 0.5rem;
+    padding: 0;
     margin: 0 0.125rem;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
-    display: inline-block;
+    display: inline;
     min-width: 2em;
-    text-align: center;
+    text-align: left;
     vertical-align: baseline;
+    line-height: inherit;
+    height: auto;
 }
 
 .blank-button:hover {
@@ -383,9 +385,7 @@ header h1 {
 }
 
 .blank-button-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+    display: inline;
     vertical-align: baseline;
 }
 
@@ -394,6 +394,7 @@ header h1 {
     align-items: center;
     gap: 0.25rem;
     margin-left: 0.25rem;
+    vertical-align: middle;
 }
 
 .feedback-btn {
