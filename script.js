@@ -129,8 +129,88 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update dropdown text when checkboxes change
         bracketCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateDropdownText);
+            checkbox.addEventListener('change', function() {
+                updateDropdownText();
+                // Show/hide color picker section when color checkbox is toggled
+                if (checkbox.id === 'colorText') {
+                    const colorSection = document.getElementById('colorPickerSection');
+                    if (colorSection) {
+                        colorSection.style.display = checkbox.checked ? 'block' : 'none';
+                    }
+                }
+            });
         });
+        
+        // Color picker functionality
+        const colorTextCheckbox = document.getElementById('colorText');
+        const colorPickerSection = document.getElementById('colorPickerSection');
+        const colorList = document.getElementById('colorList');
+        const addColorBtn = document.getElementById('addColorBtn');
+        let selectedColors = []; // Store selected colors as hex values
+        
+        function addColorItem(color = '#000000') {
+            const colorItem = document.createElement('div');
+            colorItem.className = 'color-item';
+            
+            const colorPreview = document.createElement('div');
+            colorPreview.className = 'color-preview';
+            colorPreview.style.backgroundColor = color;
+            colorPreview.setAttribute('data-color', color);
+            
+            const colorInput = document.createElement('input');
+            colorInput.type = 'color';
+            colorInput.value = color;
+            colorInput.addEventListener('change', function(e) {
+                const newColor = e.target.value;
+                colorPreview.style.backgroundColor = newColor;
+                colorPreview.setAttribute('data-color', newColor);
+                updateSelectedColors();
+            });
+            
+            colorPreview.addEventListener('click', function() {
+                colorInput.click();
+            });
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-color-btn';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', function() {
+                colorItem.remove();
+                updateSelectedColors();
+            });
+            
+            colorItem.appendChild(colorPreview);
+            colorItem.appendChild(colorInput);
+            colorItem.appendChild(removeBtn);
+            colorList.appendChild(colorItem);
+            
+            updateSelectedColors();
+        }
+        
+        function updateSelectedColors() {
+            selectedColors = [];
+            const colorPreviews = colorList.querySelectorAll('.color-preview');
+            colorPreviews.forEach(preview => {
+                selectedColors.push(preview.getAttribute('data-color'));
+            });
+        }
+        
+        if (addColorBtn) {
+            addColorBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                addColorItem();
+            });
+        }
+        
+        // Initialize with one color if color checkbox is checked
+        if (colorTextCheckbox && colorTextCheckbox.checked) {
+            if (colorPickerSection) {
+                colorPickerSection.style.display = 'block';
+            }
+            if (colorList && colorList.children.length === 0) {
+                addColorItem();
+            }
+        }
         
         // Select All button
         const selectAllBtn = document.getElementById('selectAllBtn');
@@ -199,6 +279,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const boldSelected = document.getElementById('boldText').checked;
         const highlightedSelected = document.getElementById('highlightedText').checked;
         const underlinedSelected = document.getElementById('underlinedText').checked;
+        const colorSelected = document.getElementById('colorText').checked;
+        
+        // Get selected colors
+        const colorPreviews = document.querySelectorAll('.color-preview');
+        const selectedColors = [];
+        colorPreviews.forEach(preview => {
+            selectedColors.push(preview.getAttribute('data-color'));
+        });
         
         // Build pattern based on selected bracket types
         const patternParts = [];
