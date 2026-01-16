@@ -415,7 +415,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         colorList.appendChild(colorItem);
                     }
                 });
-                updateSelectedColors();
+                // Update selected colors - access from outer scope
+                const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+                selectedColors = [];
+                colorPreviews.forEach(preview => {
+                    selectedColors.push(preview.getAttribute('data-color'));
+                });
             } else {
                 // Show message if no colors detected
                 const noColorsMsg = document.createElement('div');
