@@ -769,13 +769,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'inline-flex';
             } else {
-                // Reset to blank
+                // Reset to blank (but keep feedback color)
                 button.textContent = '　　';
                 button.setAttribute('data-state', 'blank');
-                button.classList.remove('hint-state', 'answer-state', 'correct-answer', 'wrong-answer');
+                button.classList.remove('hint-state', 'answer-state');
                 feedbackContainer.style.display = 'none';
-                checkButton.classList.remove('active');
-                xButton.classList.remove('active');
+                // Don't remove correct-answer or wrong-answer classes - keep the background color
             }
             
             // Update blank counter
