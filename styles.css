@@ -362,11 +362,14 @@ header h1 {
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     display: inline;
-    min-width: 2em;
+    min-width: 0;
+    min-height: 0;
     text-align: left;
     vertical-align: baseline;
-    line-height: inherit;
+    line-height: 1.8;
     height: auto;
+    box-sizing: border-box;
+    overflow: visible;
 }
 
 .blank-button:hover {
