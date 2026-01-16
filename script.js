@@ -706,6 +706,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
+        // Helper function to check if node is inside a processed colored element
+        function isInProcessedColoredElement(node) {
+            if (!formatOptions.colorSelected || !formatOptions.selectedColors || formatOptions.selectedColors.length === 0) {
+                return false;
+            }
+            // For text nodes, start checking from parent
+            // For elements, start from parent (since we check element itself separately)
+            let current = node.parentNode;
+            while (current && current.nodeType === Node.ELEMENT_NODE) {
+                // Check if this element has been processed (converted to button)
+                if (processedColoredElements.has(current)) {
+                    return true;
+                }
+                // Stop if we've reached the sourceNode boundary
+                if (current === sourceNode) {
+                    break;
+                }
+                current = current.parentNode;
+            }
+            return false;
+        }
+        
         // Helper function to find the nearest colored ancestor
         function getColoredAncestor(node) {
             // For text nodes, start from parent
@@ -718,18 +740,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 current = current.parentNode;
             }
             return null;
-        }
-        
-        // Helper function to check if a node is a descendant of a specific colored element
-        function isDescendantOf(node, coloredElement) {
-            let current = node.parentNode;
-            while (current && current.nodeType === Node.ELEMENT_NODE) {
-                if (current === coloredElement) {
-                    return true;
-                }
-                current = current.parentNode;
-            }
-            return false;
         }
         
         // Helper function to extract HTML content from source structure at a specific range
