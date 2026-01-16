@@ -395,13 +395,6 @@ header h1 {
     transform: scale(1.05);
 }
 
-.blank-button.hint-state {
-    /* No default styling - preserve original formatting */
-}
-
-.blank-button.answer-state {
-    /* No default styling - preserve original formatting */
-}
 
 .blank-button-wrapper {
     display: inline;
