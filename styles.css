@@ -352,7 +352,7 @@ header h1 {
 
 .blank-button {
     all: unset;
-    display: inline-block;
+    display: inline;
     color: #2563eb;
     cursor: pointer;
     font-size: inherit;
@@ -363,9 +363,15 @@ header h1 {
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     line-height: 1.8;
-    vertical-align: top;
-    height: auto;
-    min-height: 0;
+    vertical-align: baseline;
+}
+
+.blank-button * {
+    line-height: 1.8;
+    vertical-align: baseline;
+    margin: 0;
+    padding: 0;
+    display: inline;
 }
 
 .blank-button:hover {
