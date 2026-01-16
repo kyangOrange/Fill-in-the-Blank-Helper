@@ -711,8 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!formatOptions.colorSelected || !formatOptions.selectedColors || formatOptions.selectedColors.length === 0) {
                 return false;
             }
-            // For text nodes, start checking from parent
-            // For elements, start from parent (since we check element itself separately)
+            // Check if node's direct parent or any ancestor is a processed colored element
             let current = node.parentNode;
             while (current && current.nodeType === Node.ELEMENT_NODE) {
                 // Check if this element has been processed (converted to button)
@@ -724,6 +723,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 }
                 current = current.parentNode;
+            }
+            // Also check if the node itself is a processed colored element (for child elements)
+            if (node.nodeType === Node.ELEMENT_NODE && processedColoredElements.has(node)) {
+                return true;
             }
             return false;
         }
@@ -1160,6 +1163,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
+                    // Check if this element's parent is a processed colored element BEFORE processing children
+                    if (isInProcessedColoredElement(node)) {
+                        // Parent has been processed, skip all descendants
+                        let elementCharCount = 0;
+                        function countAllChars(n) {
+                            if (n.nodeType === Node.TEXT_NODE) {
+                                elementCharCount += (n.textContent || '').length;
+                            } else if (n.nodeType === Node.ELEMENT_NODE) {
+                                for (let c = n.firstChild; c; c = c.nextSibling) {
+                                    countAllChars(c);
+                                }
+                            }
+                        }
+                        countAllChars(node);
+                        charOffset += elementCharCount;
+                        return;
+                    }
+                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
