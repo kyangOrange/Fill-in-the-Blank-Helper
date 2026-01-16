@@ -920,13 +920,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
-                // Skip text nodes if they're inside a colored element (will be processed as part of parent)
-                if (isInColoredElement(node)) {
-                    const text = node.textContent;
-                    if (text) {
-                        charOffset += text.length;
+                // CRITICAL: Skip text nodes if they're inside a colored element (will be processed as part of parent)
+                // This MUST be checked FIRST before any other processing
+                if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
+                    if (isInColoredElement(node)) {
+                        const text = node.textContent;
+                        if (text) {
+                            charOffset += text.length;
+                        }
+                        return; // Skip entirely - parent will be converted as whole
                     }
-                    return;
                 }
                 
                 const text = node.textContent;
