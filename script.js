@@ -357,6 +357,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function processText(text, htmlContent) {
         output.innerHTML = '';
         
+        // Detect colors in text if color option is selected
+        const colorTextCheckbox = document.getElementById('colorText');
+        const colorList = document.getElementById('colorList');
+        if (colorTextCheckbox && colorTextCheckbox.checked && colorList) {
+            const detectedColors = detectColorsInText(htmlContent);
+            // Clear existing colors and add detected ones
+            colorList.innerHTML = '';
+            if (detectedColors.length > 0) {
+                detectedColors.forEach(color => {
+                    addColorItem(color);
+                });
+            }
+        }
+        
         // Add blank counter and accuracy counter to output area
         const counterElement = document.createElement('div');
         counterElement.id = 'blankCounter';
