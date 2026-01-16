@@ -378,7 +378,6 @@ header h1 {
     padding: 0;
     display: inline !important;
     font-size: inherit;
-    white-space: nowrap;
 }
 
 .blank-button div,
@@ -410,7 +409,6 @@ header h1 {
     display: inline;
     vertical-align: baseline;
     line-height: 1.8;
-    height: auto;
 }
 
 .feedback-buttons {
