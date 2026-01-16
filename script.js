@@ -1037,13 +1037,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update charOffset to skip over this element's text content
                     charOffset = elementEndOffset;
                 } else {
+                    // Check if this element has selected color (to pass to children)
+                    const nodeHasSelectedColor = formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors);
+                    const shouldSkipChildren = parentHasSelectedColor || nodeHasSelectedColor;
+                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
                     
-                    // Recursively process child nodes
+                    // Recursively process child nodes, but skip checking children if this element has selected color
                     for (let child = node.firstChild; child; child = child.nextSibling) {
-                        walkNode(child, clonedElement);
+                        walkNode(child, clonedElement, shouldSkipChildren);
                     }
                 }
             }
