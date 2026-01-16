@@ -703,7 +703,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'none';
             } else if (state === 2) {
                 // Show full answer with formatting preserved
-                button.innerHTML = storedHtmlContent;
+                // Ensure all block elements are converted to inline
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = storedHtmlContent;
+                const allElements = tempDiv.querySelectorAll('div, p, br, h1, h2, h3, h4, h5, h6, section, article');
+                allElements.forEach(el => {
+                    const span = document.createElement('span');
+                    span.style.display = 'inline';
+                    Array.from(el.childNodes).forEach(child => span.appendChild(child.cloneNode(true)));
+                    el.parentNode.replaceChild(span, el);
+                });
+                // Replace <br> with spaces
+                tempDiv.querySelectorAll('br').forEach(br => {
+                    br.replaceWith(document.createTextNode(' '));
+                });
+                button.innerHTML = tempDiv.innerHTML;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
