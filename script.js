@@ -704,15 +704,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     br.replaceWith(document.createTextNode(' '));
                 });
                 
-                // Convert block elements to inline spans while preserving all attributes and styles
+                // Convert block elements to inline spans while preserving only formatting attributes
                 const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
                 blockElements.forEach(el => {
                     const span = document.createElement('span');
                     span.style.display = 'inline';
                     
-                    // Copy all attributes to preserve formatting
+                    // Only copy formatting-related attributes (style, class, and data attributes)
+                    // Don't copy id or other non-formatting attributes
                     Array.from(el.attributes).forEach(attr => {
-                        span.setAttribute(attr.name, attr.value);
+                        if (attr.name === 'style' || attr.name === 'class' || attr.name.startsWith('data-')) {
+                            span.setAttribute(attr.name, attr.value);
+                        }
                     });
                     
                     // Move all children
