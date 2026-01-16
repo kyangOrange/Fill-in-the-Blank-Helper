@@ -541,6 +541,24 @@ header h1 {
     font-size: inherit;
 }
 
+/* Ensure sup and sub tags work properly - override the general rule */
+.blank-button sup,
+.blank-button sub {
+    font-size: 0.83em;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+    display: inline !important;
+}
+
+.blank-button sup {
+    top: -0.5em;
+}
+
+.blank-button sub {
+    bottom: -0.25em;
+}
+
 .blank-button div,
 .blank-button p,
 .blank-button br {
