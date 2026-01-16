@@ -694,16 +694,52 @@ document.addEventListener('DOMContentLoaded', function() {
             const state = clickCount % 3;
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
             
+            // Helper function to convert block elements to inline while preserving formatting
+            function convertBlockToInline(html) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Replace <br> tags with spaces
+                tempDiv.querySelectorAll('br').forEach(br => {
+                    br.replaceWith(document.createTextNode(' '));
+                });
+                
+                // Convert block elements to inline spans while preserving all attributes and styles
+                const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
+                blockElements.forEach(el => {
+                    const span = document.createElement('span');
+                    span.style.display = 'inline';
+                    
+                    // Copy all attributes to preserve formatting
+                    Array.from(el.attributes).forEach(attr => {
+                        span.setAttribute(attr.name, attr.value);
+                    });
+                    
+                    // Move all children
+                    while (el.firstChild) {
+                        span.appendChild(el.firstChild);
+                    }
+                    
+                    if (el.parentNode) {
+                        el.parentNode.replaceChild(span, el);
+                    }
+                });
+                
+                return tempDiv.innerHTML;
+            }
+            
             if (state === 1) {
                 // Show first character as hint with formatting preserved
-                const firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
+                let firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
+                firstCharHtml = convertBlockToInline(firstCharHtml);
                 button.innerHTML = firstCharHtml;
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
             } else if (state === 2) {
                 // Show full answer with formatting preserved
-                button.innerHTML = storedHtmlContent;
+                const sanitizedHtml = convertBlockToInline(storedHtmlContent);
+                button.innerHTML = sanitizedHtml;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
