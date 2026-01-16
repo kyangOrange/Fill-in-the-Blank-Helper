@@ -703,20 +703,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'none';
             } else if (state === 2) {
                 // Show full answer with formatting preserved
-                // Ensure all block elements are converted to inline
+                // Ensure all block elements are converted to inline to prevent line breaks
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = storedHtmlContent;
-                const allElements = tempDiv.querySelectorAll('div, p, br, h1, h2, h3, h4, h5, h6, section, article');
-                allElements.forEach(el => {
-                    const span = document.createElement('span');
-                    span.style.display = 'inline';
-                    Array.from(el.childNodes).forEach(child => span.appendChild(child.cloneNode(true)));
-                    el.parentNode.replaceChild(span, el);
-                });
-                // Replace <br> with spaces
+                
+                // Replace <br> tags with spaces first
                 tempDiv.querySelectorAll('br').forEach(br => {
                     br.replaceWith(document.createTextNode(' '));
                 });
+                
+                // Convert block elements to inline spans
+                const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
+                blockElements.forEach(el => {
+                    const span = document.createElement('span');
+                    span.style.display = 'inline';
+                    while (el.firstChild) {
+                        span.appendChild(el.firstChild);
+                    }
+                    if (el.parentNode) {
+                        el.parentNode.replaceChild(span, el);
+                    }
+                });
+                
                 button.innerHTML = tempDiv.innerHTML;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
