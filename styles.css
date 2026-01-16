@@ -352,17 +352,20 @@ header h1 {
 
 .blank-button {
     all: unset;
-    display: inline;
+    display: inline-block;
     color: #2563eb;
     cursor: pointer;
     font-size: inherit;
     font-family: inherit;
     margin: 0 0.125rem;
+    padding: 0;
     background: rgba(0, 0, 0, 0.03);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     line-height: 1.8;
-    vertical-align: baseline;
+    vertical-align: top;
+    height: auto;
+    min-height: 0;
 }
 
 .blank-button:hover {
@@ -382,7 +385,8 @@ header h1 {
 
 .blank-button-wrapper {
     display: inline;
-    vertical-align: baseline;
+    vertical-align: top;
+    line-height: 1.8;
 }
 
 .feedback-buttons {
