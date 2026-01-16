@@ -855,6 +855,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (node.nodeType === Node.TEXT_NODE) {
+                // Skip text nodes if parent has selected color (parent will be processed as whole)
+                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
+                    // Just add the text without processing matches - parent element will handle it
+                    const text = node.textContent;
+                    if (text) {
+                        parent.appendChild(document.createTextNode(text));
+                        charOffset += text.length;
+                    }
+                    return;
+                }
+                
                 const text = node.textContent;
                 if (text) {
                     const nodeStart = charOffset;
