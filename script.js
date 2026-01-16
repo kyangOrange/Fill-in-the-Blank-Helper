@@ -10,17 +10,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Process button click handler
     if (processBtn) {
-        processBtn.addEventListener('click', function() {
+    processBtn.addEventListener('click', function() {
             // Get HTML content from contenteditable div
             const htmlContent = textInput.innerHTML;
             // Extract plain text for processing (strip HTML tags)
             const text = textInput.textContent || textInput.innerText || '';
             if (text.trim()) {
                 processText(text, htmlContent);
-            } else {
-                alert('Please paste some text first!');
-            }
-        });
+        } else {
+            alert('Please paste some text first!');
+        }
+    });
     }
     
     // Reset button click handler
@@ -549,8 +549,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }
-        }
-        
+            }
+            
         // Process fully capitalized words (only if selected)
         // Group adjacent capitalized words into a single match
         if (capitalizedSelected) {
@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // If only whitespace or punctuation between, group them
                     if (/^[\s\.,;:!?\-]*$/.test(textBetween)) {
                         currentGroup.push(currMatch);
-                    } else {
+            } else {
                         // End current group and start new one
                         // Build grouped content by joining words with the actual text between them
                         let groupedContent = currentGroup[0].word;
@@ -806,7 +806,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const colorMatch = style.match(/color:\s*([^;]+)/i);
                     if (colorMatch) {
                         return normalizeColor(colorMatch[1].trim());
-                    }
+            }
                 }
                 // Check for color attribute (deprecated but might be used)
                 const colorAttr = el.getAttribute('color');
@@ -848,7 +848,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        function walkNode(node, parent) {
+        function walkNode(node, parent, parentHasSelectedColor = false) {
+            // Check if parent has selected color
+            if (!parentHasSelectedColor && parent && parent.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
+                parentHasSelectedColor = hasSelectedColor(parent, formatOptions.selectedColors);
+            }
+            
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 if (text) {
@@ -901,8 +906,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Add text before this range
                             if (range.start > lastIndex) {
                                 parent.appendChild(document.createTextNode(text.substring(lastIndex, range.start)));
-                            }
-                            
+        }
+        
                             if (!range.isSkip && range.match && !processedMatches.has(range.match)) {
                                 // Process the match
                                 if (range.match.type === 'bracket') {
@@ -937,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         // Add remaining text after all ranges
-                        if (lastIndex < text.length) {
+        if (lastIndex < text.length) {
                             parent.appendChild(document.createTextNode(text.substring(lastIndex)));
                         }
                     }
@@ -1298,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const state = button.getAttribute('data-state');
             if (state === 'blank') {
                 openBlanks++;
-            }
+    }
         });
         
         const counterElement = document.getElementById('blankCounter');
