@@ -56,6 +56,21 @@ header h1 {
     pointer-events: none;
 }
 
+.accuracy-counter {
+    position: absolute;
+    top: 3.5rem;
+    right: 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4908C2;
+    padding: 0.4rem 0.8rem;
+    background: #F5F0FF;
+    border-radius: 0.5rem;
+    display: inline-block;
+    z-index: 10;
+    pointer-events: none;
+}
+
 .instructions {
     background: #F8FCFF;
     border-left: 4px solid #4908C2;

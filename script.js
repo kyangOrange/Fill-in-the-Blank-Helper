@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (resetBtn) {
         resetBtn.addEventListener('click', function() {
             textInput.innerHTML = '';
-            output.innerHTML = '<div id="blankCounter" class="blank-counter">0/0 blanks open</div>';
+            output.innerHTML = '<div id="blankCounter" class="blank-counter">0/0 blanks open</div><div id="accuracyCounter" class="accuracy-counter"></div>';
             // Exit fullscreen if active
             if (document.fullscreenElement) {
                 document.exitFullscreen();
@@ -134,12 +134,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function processText(text, htmlContent) {
         output.innerHTML = '';
         
-        // Add blank counter to output area
+        // Add blank counter and accuracy counter to output area
         const counterElement = document.createElement('div');
         counterElement.id = 'blankCounter';
         counterElement.className = 'blank-counter';
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
+        
+        const accuracyElement = document.createElement('div');
+        accuracyElement.id = 'accuracyCounter';
+        accuracyElement.className = 'accuracy-counter';
+        accuracyElement.textContent = '';
+        output.appendChild(accuracyElement);
         
         // Get selected bracket types from checkboxes
         const chineseSelected = document.getElementById('chineseBrackets').checked;
@@ -258,6 +264,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update blank counter
         updateBlankCounter(blankButtons, blankButtons.length);
+        
+        // Initialize accuracy counter
+        const accuracyElement = document.getElementById('accuracyCounter');
+        if (!accuracyElement) {
+            const accElement = document.createElement('div');
+            accElement.id = 'accuracyCounter';
+            accElement.className = 'accuracy-counter';
+            accElement.textContent = '';
+            output.appendChild(accElement);
+        }
+        updateAccuracy();
     }
     
     function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons, formatOptions) {
@@ -667,10 +684,20 @@ document.addEventListener('DOMContentLoaded', function() {
         checkButton.setAttribute('aria-label', 'Got it right');
         checkButton.addEventListener('click', function(e) {
             e.stopPropagation();
+            const wasAnswered = button.hasAttribute('data-answered');
+            const wasCorrect = button.hasAttribute('data-correct');
+            
             checkButton.classList.add('active');
             xButton.classList.remove('active');
             button.classList.remove('wrong-answer');
             button.classList.add('correct-answer');
+            button.setAttribute('data-answered', 'true');
+            button.setAttribute('data-correct', 'true');
+            
+            // Update accuracy if this is a new answer or changed from wrong to correct
+            if (!wasAnswered || (wasAnswered && !wasCorrect)) {
+                updateAccuracy();
+            }
         });
         
         const xButton = document.createElement('button');
@@ -679,10 +706,20 @@ document.addEventListener('DOMContentLoaded', function() {
         xButton.setAttribute('aria-label', 'Got it wrong');
         xButton.addEventListener('click', function(e) {
             e.stopPropagation();
+            const wasAnswered = button.hasAttribute('data-answered');
+            const wasCorrect = button.hasAttribute('data-correct');
+            
             xButton.classList.add('active');
             checkButton.classList.remove('active');
             button.classList.remove('correct-answer');
             button.classList.add('wrong-answer');
+            button.setAttribute('data-answered', 'true');
+            button.removeAttribute('data-correct');
+            
+            // Update accuracy if this is a new answer or changed from correct to wrong
+            if (!wasAnswered || (wasAnswered && wasCorrect)) {
+                updateAccuracy();
+            }
         });
         
         feedbackContainer.appendChild(checkButton);
