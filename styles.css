@@ -364,6 +364,7 @@ header h1 {
     line-height: 1.8;
     vertical-align: baseline;
     display: inline;
+    white-space: nowrap;
 }
 
 .blank-button * {
