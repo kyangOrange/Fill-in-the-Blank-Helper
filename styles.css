@@ -351,32 +351,28 @@ header h1 {
 }
 
 .blank-button {
-    all: unset;
-    display: inline;
+    background: rgba(0, 0, 0, 0.03);
+    border: none;
     color: #2563eb;
     cursor: pointer;
-    font-size: inherit;
+    font-size: 1.1rem;
     font-family: inherit;
     margin: 0 0.125rem;
     padding: 0;
-    background: rgba(0, 0, 0, 0.03);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
-    line-height: inherit;
+    line-height: 1.8;
     vertical-align: baseline;
-    height: auto;
-    min-height: 0;
-    max-height: none;
+    display: inline;
 }
 
 .blank-button * {
-    line-height: inherit;
+    line-height: 1.8;
     vertical-align: baseline;
     margin: 0;
     padding: 0;
     display: inline;
     font-size: inherit;
-    height: auto;
 }
 
 .blank-button:hover {

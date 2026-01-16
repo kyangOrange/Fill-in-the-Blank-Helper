@@ -646,8 +646,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const wrapper = document.createElement('span');
         wrapper.className = 'blank-button-wrapper';
         
-        const button = document.createElement('button');
+        const button = document.createElement('span');
         button.className = 'blank-button';
+        button.setAttribute('role', 'button');
+        button.setAttribute('tabindex', '0');
         button.textContent = '　　'; // Full-width spaces for blank appearance
         button.setAttribute('data-content', content);
         button.setAttribute('data-html-content', htmlContent || content);
@@ -687,7 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let clickCount = 0;
         
-        button.addEventListener('click', function() {
+        function handleButtonClick() {
             clickCount++;
             const state = clickCount % 3;
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
@@ -718,6 +720,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update blank counter
             updateBlankCounterFromOutput();
+        }
+        
+        button.addEventListener('click', handleButtonClick);
+        button.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleButtonClick();
+            }
         });
         
         return wrapper;
