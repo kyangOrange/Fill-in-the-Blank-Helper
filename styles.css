@@ -153,6 +153,28 @@ header h1 {
     transform: translateY(0);
 }
 
+.btn-retest {
+    background: #059669;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-retest:hover {
+    background: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.btn-retest:active {
+    transform: translateY(0);
+}
+
 .btn-reset {
     background: #dc2626;
     color: white;
