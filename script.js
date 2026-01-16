@@ -696,59 +696,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (state === 1) {
                 // Show first character as hint with formatting preserved
-                let firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
-                
-                // Ensure all block elements are converted to inline to prevent line breaks
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = firstCharHtml;
-                
-                // Replace <br> tags with spaces first
-                tempDiv.querySelectorAll('br').forEach(br => {
-                    br.replaceWith(document.createTextNode(' '));
-                });
-                
-                // Convert block elements to inline spans
-                const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
-                blockElements.forEach(el => {
-                    const span = document.createElement('span');
-                    span.style.display = 'inline';
-                    while (el.firstChild) {
-                        span.appendChild(el.firstChild);
-                    }
-                    if (el.parentNode) {
-                        el.parentNode.replaceChild(span, el);
-                    }
-                });
-                
-                button.innerHTML = tempDiv.innerHTML;
+                const firstCharHtml = getFirstCharacterHTML(storedHtmlContent, content);
+                button.innerHTML = firstCharHtml;
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
             } else if (state === 2) {
                 // Show full answer with formatting preserved
-                // Ensure all block elements are converted to inline to prevent line breaks
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = storedHtmlContent;
-                
-                // Replace <br> tags with spaces first
-                tempDiv.querySelectorAll('br').forEach(br => {
-                    br.replaceWith(document.createTextNode(' '));
-                });
-                
-                // Convert block elements to inline spans
-                const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
-                blockElements.forEach(el => {
-                    const span = document.createElement('span');
-                    span.style.display = 'inline';
-                    while (el.firstChild) {
-                        span.appendChild(el.firstChild);
-                    }
-                    if (el.parentNode) {
-                        el.parentNode.replaceChild(span, el);
-                    }
-                });
-                
-                button.innerHTML = tempDiv.innerHTML;
+                button.innerHTML = storedHtmlContent;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
