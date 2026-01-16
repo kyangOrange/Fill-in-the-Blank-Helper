@@ -35,8 +35,6 @@ A web application that helps students review by hiding answers in various format
 
 2. **Select answer formats** (optional):
    - Use the dropdown menu above the output area to select which answer formats should be processed as blanks
-   - For colored text: Select the "Color" option to detect all colors in your text, then click on the colors you want to process as blanks
-   - Use "Select All" or "Select None" buttons for quick selection
    - None are selected by default - select the formats you want to use
    - Only selected formats will be converted to interactive blanks
 
@@ -45,7 +43,6 @@ A web application that helps students review by hiding answers in various format
      - **Bracket types**: "The capital of France is (Paris)", "The capital of Japan is （Tokyo）", "The capital of Germany is {Berlin}", or "The capital of Spain is [Madrid]"
      - **Formatted text**: Text that is capitalized (ALL CAPS), italic, bold, highlighted, underlined, or colored
    - Paste the text into the text area (original formatting like colors, fonts, and styles will be preserved)
-   - **Tip**: Press the Tab key when the input box is empty to paste an example text
    - Click the "Process Text" button (or press Ctrl+Enter / Cmd+Enter)
    - View the blank counter in the top right of the output area showing how many blanks are open
    - View the accuracy counter below the blank counter (shows your accuracy percentage once you start answering)
