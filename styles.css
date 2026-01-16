@@ -372,11 +372,11 @@ header h1 {
 }
 
 .blank-button.correct-answer {
-    background: rgba(5, 150, 105, 0.1);
+    background: rgba(5, 150, 105, 0.2);
 }
 
 .blank-button.wrong-answer {
-    background: rgba(220, 38, 38, 0.1);
+    background: rgba(220, 38, 38, 0.2);
 }
 
 .blank-button * {
