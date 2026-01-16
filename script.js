@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const resetBtn = document.getElementById('resetBtn');
     const retestBtn = document.getElementById('retestBtn');
+    const retestBtn = document.getElementById('retestBtn');
     
     // Process button click handler
     processBtn.addEventListener('click', function() {
