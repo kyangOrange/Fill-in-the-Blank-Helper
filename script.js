@@ -700,6 +700,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formatOptions.underlinedSelected && isUnderlined(node)) {
                     shouldConvert = true;
                     formatType = 'underlined';
+                } else if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
+                    shouldConvert = true;
+                    formatType = 'color';
                 }
                 
                 if (shouldConvert && elementText.trim()) {
