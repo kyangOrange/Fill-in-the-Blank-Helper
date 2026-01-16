@@ -283,11 +283,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-color-btn';
             removeBtn.innerHTML = '×';
-            removeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                colorItem.remove();
-                updateSelectedColors();
-            });
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            colorItem.remove();
+                            // Update selected colors
+                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
+                            selectedColors = [];
+                            colorPreviews.forEach(preview => {
+                                selectedColors.push(preview.getAttribute('data-color'));
+                            });
+                        });
             
             colorItem.appendChild(colorPreview);
             colorItem.appendChild(removeBtn);
@@ -396,7 +401,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             const isSelected = colorPreview.getAttribute('data-selected') === 'true';
                             colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
                             colorPreview.classList.toggle('color-selected', !isSelected);
-                            updateSelectedColors();
+                            // Update selected colors
+                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
+                            selectedColors = [];
+                            colorPreviews.forEach(preview => {
+                                selectedColors.push(preview.getAttribute('data-color'));
+                            });
                         });
                         
                         const removeBtn = document.createElement('button');
