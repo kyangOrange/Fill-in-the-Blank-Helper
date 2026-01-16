@@ -1026,9 +1026,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const elementText = node.textContent || '';
                 
                 // FIRST: Check if this element is inside a colored ancestor - skip entirely
+                // IMPORTANT: Check this BEFORE checking if the element itself is colored
+                // to avoid processing children of colored elements
                 const coloredAncestor = getColoredAncestor(node);
-                if (coloredAncestor) {
-                    // This element is inside a colored ancestor, skip it - ancestor will be processed as whole
+                if (coloredAncestor && coloredAncestor !== node) {
+                    // This element is inside a colored ancestor (but not the colored element itself)
+                    // Skip it - the ancestor will be processed as whole
                     let elementCharCount = 0;
                     function countAllChars(node) {
                         if (node.nodeType === Node.TEXT_NODE) {
