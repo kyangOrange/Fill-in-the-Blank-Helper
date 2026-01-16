@@ -366,7 +366,8 @@ header h1 {
 }
 
 .color-preview:not(.color-selected) {
-    opacity: 0.5;
+    opacity: 1;
+    border-color: #d1d5db;
 }
 
 .color-item input[type="color"] {

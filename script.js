@@ -338,16 +338,21 @@ document.addEventListener('DOMContentLoaded', function() {
                                         colorItem.className = 'color-item';
                                         
                                         const colorPreview = document.createElement('div');
-                                        colorPreview.className = 'color-preview color-selected';
+                                        colorPreview.className = 'color-preview'; // Initially not selected
                                         colorPreview.style.backgroundColor = color;
                                         colorPreview.setAttribute('data-color', color);
-                                        colorPreview.setAttribute('data-selected', 'true');
+                                        colorPreview.setAttribute('data-selected', 'false'); // Initially deselected
                                         
                                         colorPreview.addEventListener('click', function(e) {
                                             e.stopPropagation();
                                             const isSelected = colorPreview.getAttribute('data-selected') === 'true';
                                             colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
-                                            colorPreview.classList.toggle('color-selected', !isSelected);
+                                            // Toggle the selected class - selected means purple border
+                                            if (!isSelected) {
+                                                colorPreview.classList.add('color-selected');
+                                            } else {
+                                                colorPreview.classList.remove('color-selected');
+                                            }
                                             // Update selected colors
                                             const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
                                             selectedColors = [];
@@ -375,12 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         colorList.appendChild(colorItem);
                                     }
                                 });
-                                // Update selected colors
-                                const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+                                // Update selected colors (initially empty since all are deselected)
                                 selectedColors = [];
-                                colorPreviews.forEach(preview => {
-                                    selectedColors.push(preview.getAttribute('data-color'));
-                                });
                             } else {
                                 // Show message if no colors detected
                                 const noColorsMsg = document.createElement('div');
