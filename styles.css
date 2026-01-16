@@ -320,8 +320,10 @@ header h1 {
 
 .color-picker-section {
     padding: 0.75rem 1rem;
-    border-top: 1px solid #e5e7eb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
     background: #f9fafb;
+    margin-top: 0.5rem;
 }
 
 .color-picker-header {
