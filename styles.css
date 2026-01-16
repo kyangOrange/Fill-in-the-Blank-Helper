@@ -358,9 +358,9 @@ header h1 {
 .blank-button {
     background: rgba(0, 0, 0, 0.03);
     border: none;
-    color: #2563eb;
+    color: inherit;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: inherit;
     font-family: inherit;
     margin: 0 0.125rem;
     padding: 0;
