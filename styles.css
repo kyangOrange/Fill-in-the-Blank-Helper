@@ -372,8 +372,9 @@ header h1 {
     vertical-align: baseline;
     margin: 0;
     padding: 0;
-    display: inline;
+    display: inline !important;
     font-size: inherit;
+    white-space: nowrap;
 }
 
 .blank-button:hover {
@@ -396,6 +397,7 @@ header h1 {
     vertical-align: baseline;
     line-height: 1.8;
     height: auto;
+    white-space: nowrap;
 }
 
 .feedback-buttons {
