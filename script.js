@@ -1009,24 +1009,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     // Convert formatted element to button
-                    // Preserve the formatting by storing the element's HTML structure
-                    let elementHtml = elementText.trim();
+                    // Preserve the entire HTML structure including children (like <sup>)
+                    let elementHtml = '';
                     const tagName = node.tagName.toLowerCase();
                     
-                    // Wrap content with appropriate formatting tags
-                    if (tagName === 'i' || tagName === 'em') {
-                        elementHtml = `<i>${elementHtml}</i>`;
-                    } else if (tagName === 'b' || tagName === 'strong') {
-                        elementHtml = `<b>${elementHtml}</b>`;
-                    } else if (tagName === 'mark') {
-                        elementHtml = `<mark>${elementHtml}</mark>`;
-                    } else if (tagName === 'u') {
-                        elementHtml = `<u>${elementHtml}</u>`;
-                    } else {
-                        // For elements with inline styles, preserve the style attribute
+                    // For color elements, preserve the entire innerHTML including all child elements
+                    if (formatType === 'color') {
+                        elementHtml = node.innerHTML || elementText.trim();
+                        // Preserve the style attribute if present
                         const style = node.getAttribute('style') || '';
                         if (style) {
                             elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                        }
+                    } else {
+                        // For other formatting types, use simpler wrapping
+                        elementHtml = elementText.trim();
+                        if (tagName === 'i' || tagName === 'em') {
+                            elementHtml = `<i>${elementHtml}</i>`;
+                        } else if (tagName === 'b' || tagName === 'strong') {
+                            elementHtml = `<b>${elementHtml}</b>`;
+                        } else if (tagName === 'mark') {
+                            elementHtml = `<mark>${elementHtml}</mark>`;
+                        } else if (tagName === 'u') {
+                            elementHtml = `<u>${elementHtml}</u>`;
+                        } else {
+                            // For elements with inline styles, preserve the style attribute
+                            const style = node.getAttribute('style') || '';
+                            if (style) {
+                                elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                            }
                         }
                     }
                     
@@ -1036,6 +1047,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Update charOffset to skip over this element's text content
                     charOffset = elementEndOffset;
+                    // Don't process children - the entire element is already converted to a button
+                    return;
                 } else {
                     // Check if this element has selected color (to pass to children)
                     const nodeHasSelectedColor = formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors);
