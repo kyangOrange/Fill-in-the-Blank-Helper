@@ -758,8 +758,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateBlankText(content) {
         if (!content) return '　　';
         // Use full-width spaces to match the visual length of the answer
-        // Full-width spaces are approximately the width of regular characters
+        // Count characters more accurately - full-width spaces match regular character width
         const length = content.length;
+        // Use exactly the same number of full-width spaces as characters in the answer
         return '　'.repeat(Math.max(2, length));
     }
     
