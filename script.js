@@ -707,24 +707,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Convert block elements to inline spans while preserving only formatting attributes
                 const blockElements = tempDiv.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, section, article, header, footer, nav, aside');
                 blockElements.forEach(el => {
-                    const span = document.createElement('span');
-                    span.style.display = 'inline';
+                    // Check if element has any formatting (style, class, or inline formatting)
+                    const hasStyle = el.hasAttribute('style') && el.getAttribute('style').trim();
+                    const hasClass = el.hasAttribute('class') && el.getAttribute('class').trim();
+                    const hasDataAttrs = Array.from(el.attributes).some(attr => attr.name.startsWith('data-'));
+                    const hasInlineFormatting = el.querySelector('b, strong, i, em, u, mark, span[style], font');
                     
-                    // Only copy formatting-related attributes (style, class, and data attributes)
-                    // Don't copy id or other non-formatting attributes
-                    Array.from(el.attributes).forEach(attr => {
-                        if (attr.name === 'style' || attr.name === 'class' || attr.name.startsWith('data-')) {
-                            span.setAttribute(attr.name, attr.value);
+                    if (hasStyle || hasClass || hasDataAttrs || hasInlineFormatting) {
+                        // Has formatting - preserve it in a span
+                        const span = document.createElement('span');
+                        span.style.display = 'inline';
+                        
+                        // Only copy formatting-related attributes
+                        Array.from(el.attributes).forEach(attr => {
+                            if (attr.name === 'style' || attr.name === 'class' || attr.name.startsWith('data-')) {
+                                span.setAttribute(attr.name, attr.value);
+                            }
+                        });
+                        
+                        // Move all children
+                        while (el.firstChild) {
+                            span.appendChild(el.firstChild);
                         }
-                    });
-                    
-                    // Move all children
-                    while (el.firstChild) {
-                        span.appendChild(el.firstChild);
-                    }
-                    
-                    if (el.parentNode) {
-                        el.parentNode.replaceChild(span, el);
+                        
+                        if (el.parentNode) {
+                            el.parentNode.replaceChild(span, el);
+                        }
+                    } else {
+                        // No formatting - just unwrap the element
+                        const fragment = document.createDocumentFragment();
+                        while (el.firstChild) {
+                            fragment.appendChild(el.firstChild);
+                        }
+                        if (el.parentNode) {
+                            el.parentNode.replaceChild(fragment, el);
+                        }
                     }
                 });
                 
