@@ -367,11 +367,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 colorPickerSection.style.display = 'block';
             }
             const detectedColors = detectColorsInText(htmlContent);
-            console.log('Detected colors:', detectedColors, 'from HTML:', htmlContent.substring(0, 200)); // Debug
             // Clear existing colors and add detected ones
             colorList.innerHTML = '';
             if (detectedColors && detectedColors.length > 0) {
-                console.log('Adding', detectedColors.length, 'colors to list'); // Debug
                 detectedColors.forEach(color => {
                     // Create color item directly here to avoid scope issues
                     const existingColors = colorList.querySelectorAll('.color-preview');
@@ -407,7 +405,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         removeBtn.addEventListener('click', function(e) {
                             e.stopPropagation();
                             colorItem.remove();
-                            updateSelectedColors();
+                            // Update selected colors
+                            const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
+                            selectedColors = [];
+                            colorPreviews.forEach(preview => {
+                                selectedColors.push(preview.getAttribute('data-color'));
+                            });
                         });
                         
                         colorItem.appendChild(colorPreview);
