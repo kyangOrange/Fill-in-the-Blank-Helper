@@ -488,12 +488,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const underlinedSelected = document.getElementById('underlinedText').checked;
         const colorSelected = document.getElementById('colorText').checked;
         
-        // Get selected colors (only those with data-selected="true")
-        const colorPreviews = document.querySelectorAll('#colorList .color-preview[data-selected="true"]');
-        const selectedColors = [];
-        colorPreviews.forEach(preview => {
-            selectedColors.push(preview.getAttribute('data-color'));
-        });
+        // Get selected colors (use outer scope selectedColors that was updated above, or get fresh if color is selected)
+        let selectedColorsArray = [];
+        if (colorSelected && colorList) {
+            const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+            colorPreviews.forEach(preview => {
+                selectedColorsArray.push(preview.getAttribute('data-color'));
+            });
+        } else if (colorSelected) {
+            // Fallback: get from outer scope if available
+            selectedColorsArray = selectedColors || [];
+        }
         
         // Build pattern based on selected bracket types
         const patternParts = [];
@@ -651,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Process the HTML structure with matches
         const blankButtons = [];
         processHTMLWithMatches(tempContainer, output, allMatches, blankButtons, {
-            italicSelected, boldSelected, highlightedSelected, underlinedSelected, colorSelected, selectedColors
+            italicSelected, boldSelected, highlightedSelected, underlinedSelected, colorSelected, selectedColors: selectedColorsArray
         });
         
         // Update blank counter
