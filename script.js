@@ -685,14 +685,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Helper function to check if node or any ancestor is marked as colored
         function isInColoredElement(node) {
-            // For text nodes, check parent
-            // For elements, check self and then ancestors
+            if (!formatOptions.colorSelected || !formatOptions.selectedColors || formatOptions.selectedColors.length === 0) {
+                return false;
+            }
+            // For text nodes, start checking from parent
+            // For elements, check self first, then ancestors
             let current = (node.nodeType === Node.TEXT_NODE) ? node.parentNode : node;
             while (current && current.nodeType === Node.ELEMENT_NODE) {
                 if (coloredElements.has(current)) {
                     return true;
                 }
                 current = current.parentNode;
+                // Stop if we've reached the sourceNode boundary
+                if (current === sourceNode) {
+                    break;
+                }
             }
             return false;
         }
