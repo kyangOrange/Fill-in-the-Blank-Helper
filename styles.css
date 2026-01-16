@@ -362,12 +362,13 @@ header h1 {
     background: rgba(0, 0, 0, 0.03);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
-    line-height: 1.8;
+    line-height: 1;
     vertical-align: baseline;
+    height: auto;
 }
 
 .blank-button * {
-    line-height: 1.8;
+    line-height: 1;
     vertical-align: baseline;
     margin: 0;
     padding: 0;
