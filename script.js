@@ -1107,12 +1107,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     countChars(node);
                     const elementEndOffset = elementStartOffset + elementCharCount;
                     
-                    // Mark any capitalized matches that overlap with this element as processed
-                    for (const match of matches) {
-                        if (match.type === 'capitalized' && 
-                            match.start < elementEndOffset && 
-                            match.end > elementStartOffset) {
-                            processedMatches.add(match);
+                    // Mark ALL matches that overlap with this colored element as processed
+                    // This prevents children from being processed separately
+                    if (formatType === 'color') {
+                        for (const match of matches) {
+                            if (match.start < elementEndOffset && 
+                                match.end > elementStartOffset) {
+                                processedMatches.add(match);
+                            }
+                        }
+                    } else {
+                        // For other format types, only mark capitalized matches
+                        for (const match of matches) {
+                            if (match.type === 'capitalized' && 
+                                match.start < elementEndOffset && 
+                                match.end > elementStartOffset) {
+                                processedMatches.add(match);
+                            }
                         }
                     }
                     
