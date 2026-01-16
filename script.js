@@ -369,9 +369,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const detectedColors = detectColorsInText(htmlContent);
             // Clear existing colors and add detected ones
             colorList.innerHTML = '';
-            if (detectedColors.length > 0) {
+            console.log('Detected colors:', detectedColors); // Debug
+            if (detectedColors && detectedColors.length > 0) {
                 detectedColors.forEach(color => {
-                    addColorItem(color);
+                    console.log('Adding color:', color); // Debug
+                    // Get colorList again to ensure we have the right reference
+                    const currentColorList = document.getElementById('colorList');
+                    if (currentColorList) {
+                        addColorItem(color);
+                    }
                 });
             } else {
                 // Show message if no colors detected
