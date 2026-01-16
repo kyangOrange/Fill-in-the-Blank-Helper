@@ -587,6 +587,67 @@ document.addEventListener('DOMContentLoaded', function() {
             return style.includes('text-decoration') && (style.includes('underline') || style.match(/text-decoration[:\s]*underline/));
         }
         
+        // Helper function to check if element has a selected color
+        function hasSelectedColor(element, selectedColors) {
+            if (!selectedColors || selectedColors.length === 0) return false;
+            if (!element.tagName) return false;
+            
+            // Normalize color to compare (convert to lowercase, handle different formats)
+            function normalizeColor(color) {
+                if (!color) return '';
+                return color.toLowerCase().trim();
+            }
+            
+            // Get computed color from element
+            function getElementColor(el) {
+                const style = el.getAttribute('style') || '';
+                // Check for color in style attribute
+                if (style.includes('color:')) {
+                    const colorMatch = style.match(/color:\s*([^;]+)/i);
+                    if (colorMatch) {
+                        return normalizeColor(colorMatch[1].trim());
+                    }
+                }
+                // Check for color attribute (deprecated but might be used)
+                const colorAttr = el.getAttribute('color');
+                if (colorAttr) {
+                    return normalizeColor(colorAttr);
+                }
+                // Check for font tag with color
+                if (el.tagName && el.tagName.toLowerCase() === 'font') {
+                    const fontColor = el.getAttribute('color');
+                    if (fontColor) {
+                        return normalizeColor(fontColor);
+                    }
+                }
+                return null;
+            }
+            
+            const elementColor = getElementColor(element);
+            if (!elementColor) return false;
+            
+            // Compare with selected colors (normalize selected colors too)
+            return selectedColors.some(selectedColor => {
+                const normalizedSelected = normalizeColor(selectedColor);
+                // Direct match
+                if (elementColor === normalizedSelected) return true;
+                // Convert hex to rgb for comparison if needed
+                if (normalizedSelected.startsWith('#')) {
+                    const hex = normalizedSelected.replace('#', '');
+                    if (hex.length === 6) {
+                        const r = parseInt(hex.substr(0, 2), 16);
+                        const g = parseInt(hex.substr(2, 2), 16);
+                        const b = parseInt(hex.substr(4, 2), 16);
+                        const rgbStr = `rgb(${r}, ${g}, ${b})`;
+                        if (elementColor === rgbStr || elementColor === `rgb(${r},${g},${b})`) return true;
+                    }
+                }
+                // Check if element color contains the hex value
+                if (elementColor.includes(normalizedSelected)) return true;
+                return false;
+            });
+        }
+        
         function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
