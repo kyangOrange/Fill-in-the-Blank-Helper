@@ -419,6 +419,9 @@ header h1 {
     line-height: 1.8;
     vertical-align: baseline;
     display: inline;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 .blank-button.correct-answer {
@@ -458,6 +461,8 @@ header h1 {
     display: inline;
     vertical-align: baseline;
     line-height: 1.8;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .feedback-buttons {
