@@ -39,10 +39,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset all buttons to blank state and clear feedback
             const buttons = output.querySelectorAll('.blank-button');
             buttons.forEach(button => {
-                // Reset to blank state
-                button.textContent = '　　';
-                button.setAttribute('data-state', 'blank');
-                button.classList.remove('hint-state', 'answer-state', 'correct-answer', 'wrong-answer');
+        // Reset to blank state
+        const content = button.getAttribute('data-content') || '';
+        button.textContent = generateBlankText(content);
+        button.setAttribute('data-state', 'blank');
+        button.classList.remove('hint-state', 'answer-state', 'correct-answer', 'wrong-answer');
                 
                 // Remove feedback attributes
                 button.removeAttribute('data-answered');
@@ -263,7 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Process fully capitalized words (only if selected)
+        // Group adjacent capitalized words into a single match
         if (capitalizedSelected) {
+            const capitalizedMatches = [];
             let capitalizedMatch;
             while ((capitalizedMatch = capitalizedWordPattern.exec(text)) !== null) {
                 const word = capitalizedMatch[0];
@@ -280,11 +283,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (!overlaps) {
+                    capitalizedMatches.push({
+                        word: word,
+                        start: start,
+                        end: end
+                    });
+                }
+            }
+            
+            // Group adjacent capitalized words
+            if (capitalizedMatches.length > 0) {
+                let currentGroup = [capitalizedMatches[0]];
+                for (let i = 1; i < capitalizedMatches.length; i++) {
+                    const prevMatch = capitalizedMatches[i - 1];
+                    const currMatch = capitalizedMatches[i];
+                    
+                    // Check if current word is adjacent to previous (allowing for whitespace/punctuation)
+                    const textBetween = text.substring(prevMatch.end, currMatch.start);
+                    // If only whitespace or punctuation between, group them
+                    if (/^[\s\.,;:!?\-]*$/.test(textBetween)) {
+                        currentGroup.push(currMatch);
+                    } else {
+                        // End current group and start new one
+                        const groupedContent = currentGroup.map(m => m.word).join(textBetween.match(/[\s\.,;:!?\-]*/)?.[0] || ' ');
+                        const groupStart = currentGroup[0].start;
+                        const groupEnd = currentGroup[currentGroup.length - 1].end;
+                        allMatches.push({
+                            type: 'capitalized',
+                            start: groupStart,
+                            end: groupEnd,
+                            content: groupedContent
+                        });
+                        currentGroup = [currMatch];
+                    }
+                }
+                // Add the last group
+                if (currentGroup.length > 0) {
+                    const groupedContent = currentGroup.map(m => m.word).join(' ');
+                    const groupStart = currentGroup[0].start;
+                    const groupEnd = currentGroup[currentGroup.length - 1].end;
                     allMatches.push({
                         type: 'capitalized',
-                        start: start,
-                        end: end,
-                        content: word
+                        start: groupStart,
+                        end: groupEnd,
+                        content: groupedContent
                     });
                 }
             }
@@ -698,6 +740,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return cloneDiv.innerHTML || firstChar;
     }
     
+    // Helper function to generate blank text matching content length
+    function generateBlankText(content) {
+        if (!content) return '　　';
+        // Use full-width spaces to approximate the visual length
+        // For better approximation, use a mix of full-width and regular spaces
+        const length = content.length;
+        // Use full-width spaces for better visual matching
+        return '　'.repeat(Math.max(2, length));
+    }
+    
     function createClickableButton(content, index, htmlContent) {
         // Create wrapper to hold button and feedback buttons
         const wrapper = document.createElement('span');
@@ -707,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.className = 'blank-button';
         button.setAttribute('role', 'button');
         button.setAttribute('tabindex', '0');
-        button.textContent = '　　'; // Full-width spaces for blank appearance
+        button.textContent = generateBlankText(content); // Match answer length
         button.setAttribute('data-content', content);
         button.setAttribute('data-html-content', htmlContent || content);
         button.setAttribute('data-state', 'blank'); // blank, hint, answer
@@ -847,7 +899,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'inline-flex';
             } else {
                 // Reset to blank (but keep feedback color)
-                button.textContent = '　　';
+                const content = button.getAttribute('data-content') || '';
+                button.textContent = generateBlankText(content);
                 button.setAttribute('data-state', 'blank');
                 button.classList.remove('hint-state', 'answer-state');
                 feedbackContainer.style.display = 'none';
