@@ -859,6 +859,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (counterElement) {
             counterElement.textContent = `${openBlanks}/${totalBlanks} blanks open`;
         }
+        
+        updateAccuracy();
+    }
+    
+    function updateAccuracy() {
+        const buttons = output.querySelectorAll('.blank-button');
+        let answered = 0;
+        let correct = 0;
+        
+        buttons.forEach(button => {
+            if (button.hasAttribute('data-answered')) {
+                answered++;
+                if (button.hasAttribute('data-correct')) {
+                    correct++;
+                }
+            }
+        });
+        
+        const accuracyElement = document.getElementById('accuracyCounter');
+        if (accuracyElement) {
+            if (answered === 0) {
+                accuracyElement.textContent = '';
+            } else {
+                const percentage = Math.round((correct / answered) * 100);
+                accuracyElement.textContent = `Accuracy: ${correct}/${answered} (${percentage}%)`;
+            }
+        }
     }
     
     // Fullscreen functionality
