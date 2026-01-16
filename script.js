@@ -141,11 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
         counterElement.textContent = '0/0 blanks open';
         output.appendChild(counterElement);
         
-        const accuracyElement = document.createElement('div');
-        accuracyElement.id = 'accuracyCounter';
-        accuracyElement.className = 'accuracy-counter';
-        accuracyElement.textContent = '';
-        output.appendChild(accuracyElement);
+        const accCounter = document.createElement('div');
+        accCounter.id = 'accuracyCounter';
+        accCounter.className = 'accuracy-counter';
+        accCounter.textContent = '';
+        output.appendChild(accCounter);
         
         // Get selected bracket types from checkboxes
         const chineseSelected = document.getElementById('chineseBrackets').checked;
@@ -265,14 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update blank counter
         updateBlankCounter(blankButtons, blankButtons.length);
         
-        // Initialize accuracy counter
-        const accuracyElement = document.getElementById('accuracyCounter');
-        if (!accuracyElement) {
-            const accElement = document.createElement('div');
-            accElement.id = 'accuracyCounter';
-            accElement.className = 'accuracy-counter';
-            accElement.textContent = '';
-            output.appendChild(accElement);
+        // Initialize accuracy counter if it doesn't exist
+        if (!document.getElementById('accuracyCounter')) {
+            const accCounter = document.createElement('div');
+            accCounter.id = 'accuracyCounter';
+            accCounter.className = 'accuracy-counter';
+            accCounter.textContent = '';
+            output.appendChild(accCounter);
         }
         updateAccuracy();
     }
