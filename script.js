@@ -865,6 +865,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
+                // Also check if this text node's direct parent element has color
+                if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors)) {
+                    const text = node.textContent;
+                    if (text) {
+                        charOffset += text.length;
+                    }
+                    return;
+                }
+                
                 const text = node.textContent;
                 if (text) {
                     const nodeStart = charOffset;
@@ -959,18 +968,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Check if element itself has selected color FIRST - if so, convert entire element as one
                 const elementText = node.textContent || '';
                 let shouldConvert = false;
                 let formatType = null;
                 
-                // Check if element has selected color first (before checking parent)
+                // FIRST: Check if SOURCE node's parent already has selected color (parent will be converted as whole)
+                // Skip processing this element and all its descendants if parent has color
+                const sourceParentHasColor = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors);
+                if (sourceParentHasColor) {
+                    // Parent has color, so just count characters and skip - parent will include this
+                    let elementCharCount = 0;
+                    function countAllChars(node) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            elementCharCount += (node.textContent || '').length;
+                        } else if (node.nodeType === Node.ELEMENT_NODE) {
+                            for (let child = node.firstChild; child; child = child.nextSibling) {
+                                countAllChars(child);
+                            }
+                        }
+                    }
+                    countAllChars(node);
+                    charOffset += elementCharCount;
+                    // Don't add anything to output - parent will include this
+                    return;
+                }
+                
+                // SECOND: Check if element itself has selected color - if so, convert entire element as one
                 if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
                     shouldConvert = true;
                     formatType = 'color';
-                }
-                
-                if (formatOptions.italicSelected && isItalic(node)) {
+                } else if (formatOptions.italicSelected && isItalic(node)) {
                     shouldConvert = true;
                     formatType = 'italic';
                 } else if (formatOptions.boldSelected && isBold(node)) {
@@ -982,9 +1009,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formatOptions.underlinedSelected && isUnderlined(node)) {
                     shouldConvert = true;
                     formatType = 'underlined';
-                } else if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
-                    shouldConvert = true;
-                    formatType = 'color';
                 }
                 
                 if (shouldConvert && elementText.trim()) {
