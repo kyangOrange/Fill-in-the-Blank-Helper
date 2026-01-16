@@ -949,6 +949,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
+                // Skip if parent already has selected color (parent will be converted as whole)
+                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
+                    // Parent has color, so just clone and walk children without checking this element individually
+                    const clonedElement = node.cloneNode(false);
+                    parent.appendChild(clonedElement);
+                    for (let child = node.firstChild; child; child = child.nextSibling) {
+                        walkNode(child, clonedElement, true);
+                    }
+                    return;
+                }
+                
                 // Check if element should be converted to button
                 const elementText = node.textContent || '';
                 let shouldConvert = false;
