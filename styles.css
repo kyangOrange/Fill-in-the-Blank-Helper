@@ -377,6 +377,16 @@ header h1 {
     white-space: nowrap;
 }
 
+.blank-button div,
+.blank-button p,
+.blank-button br {
+    display: inline !important;
+}
+
+.blank-button br::before {
+    content: ' ';
+}
+
 .blank-button:hover {
     background: rgba(37, 99, 235, 0.1);
     transform: scale(1.05);
