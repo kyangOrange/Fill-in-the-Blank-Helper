@@ -668,19 +668,74 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // PRE-SCAN: Mark all elements with selected colors so we can skip their children
         const coloredElements = new Set();
+        const coloredElementRanges = []; // Store start/end char offsets for colored elements
+        
         if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
+            let tempCharOffset = 0;
+            
             function markColoredElements(node) {
                 if (node.nodeType === Node.ELEMENT_NODE) {
                     if (hasSelectedColor(node, formatOptions.selectedColors)) {
                         coloredElements.add(node);
+                        
+                        // Calculate character range for this colored element
+                        const startOffset = tempCharOffset;
+                        let elementCharCount = 0;
+                        function countChars(n) {
+                            if (n.nodeType === Node.TEXT_NODE) {
+                                elementCharCount += (n.textContent || '').length;
+                            } else if (n.nodeType === Node.ELEMENT_NODE) {
+                                for (let child = n.firstChild; child; child = child.nextSibling) {
+                                    countChars(child);
+                                }
+                            }
+                        }
+                        countChars(node);
+                        const endOffset = startOffset + elementCharCount;
+                        coloredElementRanges.push({ start: startOffset, end: endOffset, element: node });
                     }
-                    // Recursively mark all children
-                    for (let child = node.firstChild; child; child = child.nextSibling) {
-                        markColoredElements(child);
+                    
+                    // Track character offset while walking
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        tempCharOffset += (node.textContent || '').length;
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Recursively mark all children
+                        for (let child = node.firstChild; child; child = child.nextSibling) {
+                            markColoredElements(child);
+                        }
+                        // After processing element, update offset if not already done
+                        if (!coloredElements.has(node)) {
+                            // Count chars for non-colored elements
+                            let charCount = 0;
+                            function count(n) {
+                                if (n.nodeType === Node.TEXT_NODE) {
+                                    charCount += (n.textContent || '').length;
+                                } else if (n.nodeType === Node.ELEMENT_NODE) {
+                                    for (let c = n.firstChild; c; c = c.nextSibling) {
+                                        count(c);
+                                    }
+                                }
+                            }
+                            count(node);
+                            tempCharOffset += charCount;
+                        }
                     }
+                } else if (node.nodeType === Node.TEXT_NODE) {
+                    tempCharOffset += (node.textContent || '').length;
                 }
             }
             markColoredElements(sourceNode);
+            
+            // Mark all matches that overlap with colored elements as processed
+            for (const match of matches) {
+                for (const range of coloredElementRanges) {
+                    if (match.start < range.end && match.end > range.start) {
+                        // Match overlaps with colored element, mark as processed
+                        processedMatches.add(match);
+                        break;
+                    }
+                }
+            }
         }
         
         // Helper function to check if node or any ancestor is marked as colored
