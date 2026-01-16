@@ -642,6 +642,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createClickableButton(content, index, htmlContent) {
+        // Create wrapper to hold button and feedback buttons
+        const wrapper = document.createElement('span');
+        wrapper.className = 'blank-button-wrapper';
+        
         const button = document.createElement('button');
         button.className = 'blank-button';
         button.textContent = '　　'; // Full-width spaces for blank appearance
@@ -649,6 +653,37 @@ document.addEventListener('DOMContentLoaded', function() {
         button.setAttribute('data-html-content', htmlContent || content);
         button.setAttribute('data-state', 'blank'); // blank, hint, answer
         button.setAttribute('data-index', index);
+        
+        // Create feedback buttons container
+        const feedbackContainer = document.createElement('span');
+        feedbackContainer.className = 'feedback-buttons';
+        feedbackContainer.style.display = 'none';
+        
+        const checkButton = document.createElement('button');
+        checkButton.className = 'feedback-btn feedback-check';
+        checkButton.innerHTML = '✓';
+        checkButton.setAttribute('aria-label', 'Got it right');
+        checkButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            checkButton.classList.toggle('active');
+            xButton.classList.remove('active');
+        });
+        
+        const xButton = document.createElement('button');
+        xButton.className = 'feedback-btn feedback-x';
+        xButton.innerHTML = '✗';
+        xButton.setAttribute('aria-label', 'Got it wrong');
+        xButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            xButton.classList.toggle('active');
+            checkButton.classList.remove('active');
+        });
+        
+        feedbackContainer.appendChild(checkButton);
+        feedbackContainer.appendChild(xButton);
+        
+        wrapper.appendChild(button);
+        wrapper.appendChild(feedbackContainer);
         
         let clickCount = 0;
         
@@ -663,24 +698,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.innerHTML = firstCharHtml;
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
+                feedbackContainer.style.display = 'none';
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 button.innerHTML = storedHtmlContent;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
+                feedbackContainer.style.display = 'inline-flex';
             } else {
                 // Reset to blank
                 button.textContent = '　　';
                 button.setAttribute('data-state', 'blank');
                 button.classList.remove('hint-state', 'answer-state');
+                feedbackContainer.style.display = 'none';
+                checkButton.classList.remove('active');
+                xButton.classList.remove('active');
             }
             
             // Update blank counter
             updateBlankCounterFromOutput();
         });
         
-        return button;
+        return wrapper;
     }
     
     function updateBlankCounter(blankButtons, totalBlanks) {

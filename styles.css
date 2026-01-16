@@ -382,6 +382,71 @@ header h1 {
     background: rgba(37, 99, 235, 0.05);
 }
 
+.blank-button-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    vertical-align: baseline;
+}
+
+.feedback-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.25rem;
+}
+
+.feedback-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.feedback-btn:hover {
+    transform: scale(1.1);
+    border-color: #4908C2;
+}
+
+.feedback-check {
+    color: #059669;
+}
+
+.feedback-check:hover {
+    background: #d1fae5;
+    border-color: #059669;
+}
+
+.feedback-check.active {
+    background: #059669;
+    color: white;
+    border-color: #059669;
+}
+
+.feedback-x {
+    color: #dc2626;
+}
+
+.feedback-x:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
+}
+
+.feedback-x.active {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+}
+
 footer {
     text-align: center;
     margin-top: 3rem;
