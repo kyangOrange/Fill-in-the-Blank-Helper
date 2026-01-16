@@ -959,23 +959,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Skip if SOURCE node's parent already has selected color (parent will be converted as whole)
-                // Check the actual parent in the source tree
-                const sourceParentHasColor = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node.parentNode, formatOptions.selectedColors);
-                if (sourceParentHasColor) {
-                    // Parent has color, so just clone and walk children without checking this element individually
-                    const clonedElement = node.cloneNode(false);
-                    parent.appendChild(clonedElement);
-                    for (let child = node.firstChild; child; child = child.nextSibling) {
-                        walkNode(child, clonedElement, true);
-                    }
-                    return;
-                }
-                
-                // Check if element should be converted to button
+                // Check if element itself has selected color FIRST - if so, convert entire element as one
                 const elementText = node.textContent || '';
                 let shouldConvert = false;
                 let formatType = null;
+                
+                // Check if element has selected color first (before checking parent)
+                if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
+                    shouldConvert = true;
+                    formatType = 'color';
+                }
                 
                 if (formatOptions.italicSelected && isItalic(node)) {
                     shouldConvert = true;
