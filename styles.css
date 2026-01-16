@@ -66,9 +66,13 @@ header h1 {
     padding: 0.4rem 0.8rem;
     background: #F5F0FF;
     border-radius: 0.5rem;
-    display: inline-block;
+    display: none;
     z-index: 10;
     pointer-events: none;
+}
+
+.accuracy-counter:not(:empty) {
+    display: inline-block;
 }
 
 .instructions {
