@@ -322,6 +322,8 @@ header h1 {
 
 .output-area .blank-button-wrapper {
     white-space: normal;
+    display: inline-block;
+    vertical-align: baseline;
 }
 
 .output-section:fullscreen {
