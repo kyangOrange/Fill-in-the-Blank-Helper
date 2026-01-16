@@ -9,17 +9,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const retestBtn = document.getElementById('retestBtn');
     
     // Process button click handler
-    processBtn.addEventListener('click', function() {
-        // Get HTML content from contenteditable div
-        const htmlContent = textInput.innerHTML;
-        // Extract plain text for processing (strip HTML tags)
-        const text = textInput.textContent || textInput.innerText || '';
-        if (text.trim()) {
-            processText(text, htmlContent);
-        } else {
-            alert('Please paste some text first!');
-        }
-    });
+    if (processBtn) {
+        processBtn.addEventListener('click', function() {
+            // Get HTML content from contenteditable div
+            const htmlContent = textInput.innerHTML;
+            // Extract plain text for processing (strip HTML tags)
+            const text = textInput.textContent || textInput.innerText || '';
+            if (text.trim()) {
+                processText(text, htmlContent);
+            } else {
+                alert('Please paste some text first!');
+            }
+        });
+    }
     
     // Reset button click handler
     if (resetBtn) {
