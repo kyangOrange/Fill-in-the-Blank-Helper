@@ -412,7 +412,6 @@ header h1 {
     vertical-align: baseline;
     line-height: 1.8;
     height: auto;
-    white-space: nowrap;
 }
 
 .feedback-buttons {
