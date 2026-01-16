@@ -372,6 +372,7 @@ header h1 {
     margin: 0;
     padding: 0;
     display: inline;
+    font-size: inherit;
 }
 
 .blank-button:hover {
@@ -391,7 +392,7 @@ header h1 {
 
 .blank-button-wrapper {
     display: inline;
-    vertical-align: top;
+    vertical-align: baseline;
     line-height: 1.8;
 }
 
