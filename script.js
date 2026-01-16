@@ -451,18 +451,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function processText(text, htmlContent) {
         output.innerHTML = '';
         
-        // Get selected colors from the color list (already detected when checkbox was checked)
-        const colorTextCheckbox = document.getElementById('colorText');
-        const colorList = document.getElementById('colorList');
-        if (colorTextCheckbox && colorTextCheckbox.checked && colorList) {
-            // Update selected colors from the current state of the color list
-            const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
-            selectedColors = [];
-            colorPreviews.forEach(preview => {
-                selectedColors.push(preview.getAttribute('data-color'));
-            });
-        }
-        
         // Add blank counter and accuracy counter to output area
         const counterElement = document.createElement('div');
         counterElement.id = 'blankCounter';
@@ -488,16 +476,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const underlinedSelected = document.getElementById('underlinedText').checked;
         const colorSelected = document.getElementById('colorText').checked;
         
-        // Get selected colors (use outer scope selectedColors that was updated above, or get fresh if color is selected)
+        // Get selected colors directly from the DOM
         let selectedColorsArray = [];
-        if (colorSelected && colorList) {
-            const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
-            colorPreviews.forEach(preview => {
-                selectedColorsArray.push(preview.getAttribute('data-color'));
-            });
-        } else if (colorSelected) {
-            // Fallback: get from outer scope if available
-            selectedColorsArray = selectedColors || [];
+        if (colorSelected) {
+            const colorList = document.getElementById('colorList');
+            if (colorList) {
+                const colorPreviews = colorList.querySelectorAll('.color-preview[data-selected="true"]');
+                colorPreviews.forEach(preview => {
+                    selectedColorsArray.push(preview.getAttribute('data-color'));
+                });
+            }
         }
         
         // Build pattern based on selected bracket types
