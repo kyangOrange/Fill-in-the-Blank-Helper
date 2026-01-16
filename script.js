@@ -666,85 +666,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const processedMatches = new Set(); // Track which matches have been processed
         formatOptions = formatOptions || {};
         
-        // PRE-SCAN: Mark all elements with selected colors so we can skip their children
-        const coloredElements = new Set();
-        const processedColoredElements = new Set(); // Track which colored elements have been converted to buttons
-        
-        if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
-            function markColoredElements(node) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    if (hasSelectedColor(node, formatOptions.selectedColors)) {
-                        coloredElements.add(node);
-                    }
-                    // Recursively mark all children
-                    for (let child = node.firstChild; child; child = child.nextSibling) {
-                        markColoredElements(child);
-                    }
-                }
-            }
-            markColoredElements(sourceNode);
-        }
-        
-        // Helper function to check if node or any ancestor is marked as colored
-        function isInColoredElement(node) {
-            if (!formatOptions.colorSelected || !formatOptions.selectedColors || formatOptions.selectedColors.length === 0) {
-                return false;
-            }
-            // For text nodes, start checking from parent
-            // For elements, check self first, then ancestors
-            let current = (node.nodeType === Node.TEXT_NODE) ? node.parentNode : node;
-            while (current && current.nodeType === Node.ELEMENT_NODE) {
-                if (coloredElements.has(current)) {
-                    return true;
-                }
-                current = current.parentNode;
-                // Stop if we've reached the sourceNode boundary
-                if (current === sourceNode) {
-                    break;
-                }
-            }
-            return false;
-        }
-        
-        // Helper function to check if node is inside a processed colored element
-        function isInProcessedColoredElement(node) {
-            if (!formatOptions.colorSelected || !formatOptions.selectedColors || formatOptions.selectedColors.length === 0) {
-                return false;
-            }
-            // Check if node's direct parent or any ancestor is a processed colored element
-            let current = node.parentNode;
-            while (current && current.nodeType === Node.ELEMENT_NODE) {
-                // Check if this element has been processed (converted to button)
-                if (processedColoredElements.has(current)) {
-                    return true;
-                }
-                // Stop if we've reached the sourceNode boundary
-                if (current === sourceNode) {
-                    break;
-                }
-                current = current.parentNode;
-            }
-            // Also check if the node itself is a processed colored element (for child elements)
-            if (node.nodeType === Node.ELEMENT_NODE && processedColoredElements.has(node)) {
-                return true;
-            }
-            return false;
-        }
-        
-        // Helper function to find the nearest colored ancestor
-        function getColoredAncestor(node) {
-            // For text nodes, start from parent
-            // For elements, start from parent (since we check element itself separately)
-            let current = node.parentNode;
-            while (current && current.nodeType === Node.ELEMENT_NODE) {
-                if (coloredElements.has(current)) {
-                    return current;
-                }
-                current = current.parentNode;
-            }
-            return null;
-        }
-        
         // Helper function to extract HTML content from source structure at a specific range
         function extractHTMLContent(start, end) {
             let currentOffset = 0;
@@ -927,29 +848,21 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Helper function to check if any ancestor in the source tree has selected color
-        function hasColoredAncestor(node) {
-            if (!node || !formatOptions.colorSelected || !formatOptions.selectedColors) return false;
-            let current = node.parentNode;
-            while (current && current.nodeType === Node.ELEMENT_NODE) {
-                if (hasSelectedColor(current, formatOptions.selectedColors)) {
-                    return true;
-                }
-                current = current.parentNode;
+        function walkNode(node, parent, parentHasSelectedColor = false) {
+            // Check if SOURCE node's parent (in source tree) has selected color
+            if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
+                parentHasSelectedColor = hasSelectedColor(node.parentNode, formatOptions.selectedColors);
             }
-            return false;
-        }
-        
-        function walkNode(node, parent) {
+            
             if (node.nodeType === Node.TEXT_NODE) {
-                // CRITICAL: Skip text nodes if they're inside a PROCESSED colored element
-                // This MUST be checked FIRST before any other processing
-                if (isInProcessedColoredElement(node)) {
+                // Skip text nodes if parent (in source tree) has selected color (parent will be processed as whole)
+                // Just update charOffset but don't add to output - parent element will include this text
+                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
                     const text = node.textContent;
                     if (text) {
                         charOffset += text.length;
                     }
-                    return; // Skip entirely - parent already converted as whole
+                    return;
                 }
                 
                 const text = node.textContent;
@@ -1046,37 +959,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     charOffset += text.length;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
+                // Check if element itself has selected color FIRST - if so, convert entire element as one
                 const elementText = node.textContent || '';
-                
-                // FIRST: Check if this element is inside a PROCESSED colored ancestor - skip entirely
-                // IMPORTANT: Check this BEFORE checking if the element itself is colored
-                // to avoid processing children of already-processed colored elements
-                if (isInProcessedColoredElement(node)) {
-                    // This element is inside a colored ancestor that has already been converted
-                    // Skip it - the ancestor was already converted as whole
-                    let elementCharCount = 0;
-                    function countAllChars(node) {
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            elementCharCount += (node.textContent || '').length;
-                        } else if (node.nodeType === Node.ELEMENT_NODE) {
-                            for (let child = node.firstChild; child; child = child.nextSibling) {
-                                countAllChars(child);
-                            }
-                        }
-                    }
-                    countAllChars(node);
-                    charOffset += elementCharCount;
-                    return;
-                }
-                
-                // SECOND: Check if element itself has selected color - if so, convert entire element as one
                 let shouldConvert = false;
                 let formatType = null;
                 
-                if (coloredElements.has(node)) {
+                // Check if element has selected color first (before checking parent)
+                if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
                     shouldConvert = true;
                     formatType = 'color';
-                } else if (formatOptions.italicSelected && isItalic(node)) {
+                }
+                
+                if (formatOptions.italicSelected && isItalic(node)) {
                     shouldConvert = true;
                     formatType = 'italic';
                 } else if (formatOptions.boldSelected && isBold(node)) {
@@ -1088,6 +982,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formatOptions.underlinedSelected && isUnderlined(node)) {
                     shouldConvert = true;
                     formatType = 'underlined';
+                } else if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
+                    shouldConvert = true;
+                    formatType = 'color';
                 }
                 
                 if (shouldConvert && elementText.trim()) {
@@ -1107,23 +1004,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     countChars(node);
                     const elementEndOffset = elementStartOffset + elementCharCount;
                     
-                    // Mark ALL matches that overlap with this colored element as processed
-                    // This prevents children from being processed separately
-                    if (formatType === 'color') {
-                        for (const match of matches) {
-                            if (match.start < elementEndOffset && 
-                                match.end > elementStartOffset) {
-                                processedMatches.add(match);
-                            }
-                        }
-                    } else {
-                        // For other format types, only mark capitalized matches
-                        for (const match of matches) {
-                            if (match.type === 'capitalized' && 
-                                match.start < elementEndOffset && 
-                                match.end > elementStartOffset) {
-                                processedMatches.add(match);
-                            }
+                    // Mark any capitalized matches that overlap with this element as processed
+                    for (const match of matches) {
+                        if (match.type === 'capitalized' && 
+                            match.start < elementEndOffset && 
+                            match.end > elementStartOffset) {
+                            processedMatches.add(match);
                         }
                     }
                     
@@ -1164,41 +1050,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     blankButtons.push(button);
                     parent.appendChild(button);
                     
-                    // Mark this colored element as processed so we can skip all descendants
-                    if (formatType === 'color') {
-                        processedColoredElements.add(node);
-                    }
-                    
                     // Update charOffset to skip over this element's text content
                     charOffset = elementEndOffset;
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
-                    // Check if this element's parent is a processed colored element BEFORE processing children
-                    if (isInProcessedColoredElement(node)) {
-                        // Parent has been processed, skip all descendants
-                        let elementCharCount = 0;
-                        function countAllChars(n) {
-                            if (n.nodeType === Node.TEXT_NODE) {
-                                elementCharCount += (n.textContent || '').length;
-                            } else if (n.nodeType === Node.ELEMENT_NODE) {
-                                for (let c = n.firstChild; c; c = c.nextSibling) {
-                                    countAllChars(c);
-                                }
-                            }
-                        }
-                        countAllChars(node);
-                        charOffset += elementCharCount;
-                        return;
-                    }
+                    // Check if this element has selected color (to pass to children)
+                    const nodeHasSelectedColor = formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors);
+                    const shouldSkipChildren = parentHasSelectedColor || nodeHasSelectedColor;
                     
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
                     
-                    // Recursively process child nodes
+                    // Recursively process child nodes, but skip checking children if this element has selected color
                     for (let child = node.firstChild; child; child = child.nextSibling) {
-                        walkNode(child, clonedElement);
+                        walkNode(child, clonedElement, shouldSkipChildren);
                     }
                 }
             }
@@ -1206,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Start walking from sourceNode's children
         for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
-            walkNode(child, targetParent);
+            walkNode(child, targetParent, false);
         }
     }
     
@@ -1250,27 +1117,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const cloneDiv = tempDiv.cloneNode(true);
         const cloneFirstTextNode = findFirstTextNode(cloneDiv);
         if (cloneFirstTextNode) {
+            // Check if the first text node is inside a sup or sub tag
+            let parentElement = cloneFirstTextNode.parentNode;
+            let supSubElement = null;
+            while (parentElement && parentElement !== cloneDiv) {
+                const tagName = parentElement.tagName ? parentElement.tagName.toLowerCase() : '';
+                if (tagName === 'sup' || tagName === 'sub') {
+                    supSubElement = parentElement;
+                    break;
+                }
+                parentElement = parentElement.parentNode;
+            }
+            
             // Replace the text node's content with just the first character
             cloneFirstTextNode.textContent = firstChar;
             
-            // Remove all siblings after the first text node in its parent
-            let current = cloneFirstTextNode.nextSibling;
-            while (current) {
-                const next = current.nextSibling;
-                current.remove();
-                current = next;
-            }
-            
-            // Walk up the parent chain and remove all siblings
-            let parent = cloneFirstTextNode.parentNode;
-            while (parent && parent !== cloneDiv) {
-                let sibling = parent.nextSibling;
+            // If inside sup/sub, preserve the entire sup/sub element with just the first char
+            if (supSubElement && supSubElement !== cloneDiv) {
+                // Remove all siblings after the sup/sub element
+                let sibling = supSubElement.nextSibling;
                 while (sibling) {
                     const next = sibling.nextSibling;
                     sibling.remove();
                     sibling = next;
                 }
-                parent = parent.parentNode;
+                // Walk up and remove siblings
+                let parent = supSubElement.parentNode;
+                while (parent && parent !== cloneDiv) {
+                    sibling = parent.nextSibling;
+                    while (sibling) {
+                        const next = sibling.nextSibling;
+                        sibling.remove();
+                        sibling = next;
+                    }
+                    parent = parent.parentNode;
+                }
+            } else {
+                // Remove all siblings after the first text node in its parent
+                let current = cloneFirstTextNode.nextSibling;
+                while (current) {
+                    const next = current.nextSibling;
+                    current.remove();
+                    current = next;
+                }
+                
+                // Walk up the parent chain and remove all siblings
+                let parent = cloneFirstTextNode.parentNode;
+                while (parent && parent !== cloneDiv) {
+                    let sibling = parent.nextSibling;
+                    while (sibling) {
+                        const next = sibling.nextSibling;
+                        sibling.remove();
+                        sibling = next;
+                    }
+                    parent = parent.parentNode;
+                }
             }
         }
         

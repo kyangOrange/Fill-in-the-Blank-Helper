@@ -541,7 +541,7 @@ header h1 {
     font-size: inherit;
 }
 
-/* Ensure sup and sub tags work properly - override the general rule */
+/* Preserve superscript and subscript formatting */
 .blank-button sup,
 .blank-button sub {
     font-size: 0.83em;
