@@ -1055,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Start walking from sourceNode's children
         for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
-            walkNode(child, targetParent);
+            walkNode(child, targetParent, false);
         }
     }
     
