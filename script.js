@@ -668,6 +668,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // PRE-SCAN: Mark all elements with selected colors so we can skip their children
         const coloredElements = new Set();
+        const processedColoredElements = new Set(); // Track which colored elements have been converted to buttons
+        
         if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
             function markColoredElements(node) {
                 if (node.nodeType === Node.ELEMENT_NODE) {
@@ -927,16 +929,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function walkNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
-                // CRITICAL: Skip text nodes if they're inside a colored element (will be processed as part of parent)
+                // CRITICAL: Skip text nodes if they're inside a PROCESSED colored element
                 // This MUST be checked FIRST before any other processing
-                if (formatOptions.colorSelected && formatOptions.selectedColors && formatOptions.selectedColors.length > 0) {
-                    if (isInColoredElement(node)) {
-                        const text = node.textContent;
-                        if (text) {
-                            charOffset += text.length;
-                        }
-                        return; // Skip entirely - parent will be converted as whole
+                if (isInProcessedColoredElement(node)) {
+                    const text = node.textContent;
+                    if (text) {
+                        charOffset += text.length;
                     }
+                    return; // Skip entirely - parent already converted as whole
                 }
                 
                 const text = node.textContent;
@@ -1035,13 +1035,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 const elementText = node.textContent || '';
                 
-                // FIRST: Check if this element is inside a colored ancestor - skip entirely
+                // FIRST: Check if this element is inside a PROCESSED colored ancestor - skip entirely
                 // IMPORTANT: Check this BEFORE checking if the element itself is colored
-                // to avoid processing children of colored elements
-                const coloredAncestor = getColoredAncestor(node);
-                if (coloredAncestor && coloredAncestor !== node) {
-                    // This element is inside a colored ancestor (but not the colored element itself)
-                    // Skip it - the ancestor will be processed as whole
+                // to avoid processing children of already-processed colored elements
+                if (isInProcessedColoredElement(node)) {
+                    // This element is inside a colored ancestor that has already been converted
+                    // Skip it - the ancestor was already converted as whole
                     let elementCharCount = 0;
                     function countAllChars(node) {
                         if (node.nodeType === Node.TEXT_NODE) {
@@ -1140,6 +1139,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const button = createClickableButton(elementText.trim(), blankButtons.length, elementHtml);
                     blankButtons.push(button);
                     parent.appendChild(button);
+                    
+                    // Mark this colored element as processed so we can skip all descendants
+                    if (formatType === 'color') {
+                        processedColoredElements.add(node);
+                    }
                     
                     // Update charOffset to skip over this element's text content
                     charOffset = elementEndOffset;
