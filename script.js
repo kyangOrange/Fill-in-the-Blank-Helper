@@ -667,8 +667,10 @@ document.addEventListener('DOMContentLoaded', function() {
         checkButton.setAttribute('aria-label', 'Got it right');
         checkButton.addEventListener('click', function(e) {
             e.stopPropagation();
-            checkButton.classList.toggle('active');
+            checkButton.classList.add('active');
             xButton.classList.remove('active');
+            button.classList.remove('wrong-answer');
+            button.classList.add('correct-answer');
         });
         
         const xButton = document.createElement('button');
@@ -677,8 +679,10 @@ document.addEventListener('DOMContentLoaded', function() {
         xButton.setAttribute('aria-label', 'Got it wrong');
         xButton.addEventListener('click', function(e) {
             e.stopPropagation();
-            xButton.classList.toggle('active');
+            xButton.classList.add('active');
             checkButton.classList.remove('active');
+            button.classList.remove('correct-answer');
+            button.classList.add('wrong-answer');
         });
         
         feedbackContainer.appendChild(checkButton);
@@ -768,7 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reset to blank
                 button.textContent = '　　';
                 button.setAttribute('data-state', 'blank');
-                button.classList.remove('hint-state', 'answer-state');
+                button.classList.remove('hint-state', 'answer-state', 'correct-answer', 'wrong-answer');
                 feedbackContainer.style.display = 'none';
                 checkButton.classList.remove('active');
                 xButton.classList.remove('active');
