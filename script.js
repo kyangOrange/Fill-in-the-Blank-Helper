@@ -369,16 +369,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const detectedColors = detectColorsInText(htmlContent);
             // Clear existing colors and add detected ones
             colorList.innerHTML = '';
-            console.log('Detected colors:', detectedColors); // Debug
             if (detectedColors && detectedColors.length > 0) {
                 detectedColors.forEach(color => {
-                    console.log('Adding color:', color); // Debug
-                    // Get colorList again to ensure we have the right reference
-                    const currentColorList = document.getElementById('colorList');
-                    if (currentColorList) {
-                        addColorItem(color);
+                    // Create color item directly here to avoid scope issues
+                    const existingColors = colorList.querySelectorAll('.color-preview');
+                    let colorExists = false;
+                    for (let existing of existingColors) {
+                        if (existing.getAttribute('data-color') === color) {
+                            colorExists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!colorExists) {
+                        const colorItem = document.createElement('div');
+                        colorItem.className = 'color-item';
+                        
+                        const colorPreview = document.createElement('div');
+                        colorPreview.className = 'color-preview color-selected';
+                        colorPreview.style.backgroundColor = color;
+                        colorPreview.setAttribute('data-color', color);
+                        colorPreview.setAttribute('data-selected', 'true');
+                        
+                        colorPreview.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const isSelected = colorPreview.getAttribute('data-selected') === 'true';
+                            colorPreview.setAttribute('data-selected', isSelected ? 'false' : 'true');
+                            colorPreview.classList.toggle('color-selected', !isSelected);
+                            updateSelectedColors();
+                        });
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-color-btn';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            colorItem.remove();
+                            updateSelectedColors();
+                        });
+                        
+                        colorItem.appendChild(colorPreview);
+                        colorItem.appendChild(removeBtn);
+                        colorList.appendChild(colorItem);
                     }
                 });
+                updateSelectedColors();
             } else {
                 // Show message if no colors detected
                 const noColorsMsg = document.createElement('div');
