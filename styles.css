@@ -365,6 +365,13 @@ header h1 {
     padding: 0.5rem 1rem;
 }
 
+.output-section:fullscreen .accuracy-counter {
+    top: 5rem;
+    right: 2rem;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+}
+
 .output-section:fullscreen .blank-button {
     font-size: 1.5rem;
     padding: 0.5rem 0.75rem;
