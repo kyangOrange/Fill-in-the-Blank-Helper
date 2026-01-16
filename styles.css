@@ -411,7 +411,7 @@ header h1 {
     font-size: inherit;
     font-family: inherit;
     margin: 0 0.125rem;
-    padding: 0;
+    padding: 0.125rem 0;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     line-height: 1.8;
