@@ -362,21 +362,17 @@ header h1 {
     background: rgba(0, 0, 0, 0.03);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
-    line-height: 1;
-    vertical-align: top;
-    height: auto;
-    max-height: 1em;
+    line-height: normal;
+    vertical-align: baseline;
 }
 
 .blank-button * {
-    line-height: 1 !important;
-    vertical-align: top !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: inline !important;
+    line-height: normal;
+    vertical-align: baseline;
+    margin: 0;
+    padding: 0;
+    display: inline;
     font-size: inherit;
-    height: auto;
-    max-height: 1em;
 }
 
 .blank-button:hover {
