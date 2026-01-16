@@ -305,7 +305,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         currentGroup.push(currMatch);
                     } else {
                         // End current group and start new one
-                        const groupedContent = currentGroup.map(m => m.word).join(textBetween.match(/[\s\.,;:!?\-]*/)?.[0] || ' ');
+                        // Build grouped content by joining words with the actual text between them
+                        let groupedContent = currentGroup[0].word;
+                        for (let j = 1; j < currentGroup.length; j++) {
+                            const prevEnd = currentGroup[j - 1].end;
+                            const currStart = currentGroup[j].start;
+                            const betweenText = text.substring(prevEnd, currStart);
+                            groupedContent += betweenText + currentGroup[j].word;
+                        }
                         const groupStart = currentGroup[0].start;
                         const groupEnd = currentGroup[currentGroup.length - 1].end;
                         allMatches.push({
@@ -319,7 +326,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 // Add the last group
                 if (currentGroup.length > 0) {
-                    const groupedContent = currentGroup.map(m => m.word).join(' ');
+                    // Build grouped content by joining words with the actual text between them
+                    let groupedContent = currentGroup[0].word;
+                    for (let j = 1; j < currentGroup.length; j++) {
+                        const prevEnd = currentGroup[j - 1].end;
+                        const currStart = currentGroup[j].start;
+                        const betweenText = text.substring(prevEnd, currStart);
+                        groupedContent += betweenText + currentGroup[j].word;
+                    }
                     const groupStart = currentGroup[0].start;
                     const groupEnd = currentGroup[currentGroup.length - 1].end;
                     allMatches.push({
