@@ -470,6 +470,7 @@ header h1 {
     vertical-align: middle;
     max-width: 100%;
     line-height: normal;
+    margin: 0.125rem 0;
 }
 
 /* Only reserve space when feedback is visible */
