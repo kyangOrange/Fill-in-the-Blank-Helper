@@ -1639,6 +1639,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update blank counter
             updateBlankCounterFromOutput();
             
+            // Clamp blanks to end of current line after state change (use double RAF)
+            requestAnimationFrame(() => {
+                requestAnimationFrame(clampBlanksToLineEnd);
+            });
         }
         
         button.addEventListener('click', handleButtonClick);
