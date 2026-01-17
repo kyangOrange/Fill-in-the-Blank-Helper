@@ -576,7 +576,7 @@ header h1 {
 
 .blank-button:hover {
     background: rgba(37, 99, 235, 0.1);
-    transform: scale(1.05);
+    transform: none;
 }
 
 
