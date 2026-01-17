@@ -1145,6 +1145,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
+                // If element is selected-color wrapper (span/font), DON'T clone it.
+                // Walking children into SAME parent enables merging into ONE blank.
+                if (
+                    nextColorCtx.state === 'selected' &&
+                    node.tagName &&
+                    (node.tagName.toLowerCase() === 'span' || node.tagName.toLowerCase() === 'font') &&
+                    formatOptions.colorSelected &&
+                    hasSelectedColor(node, formatOptions.selectedColors)
+                ) {
+                    for (let child = node.firstChild; child; child = child.nextSibling) {
+                        walkNode(child, parent, nextColorCtx); // parent (not clonedElement)
+                    }
+                    return;
+                }
+                
                 let shouldConvert = false;
                 let formatType = null;
                 
@@ -1316,21 +1331,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
-                    // If it's a selected-color wrapper (span/font), DON'T clone it.
-                    // Walking children into the SAME parent allows merge into ONE blank.
-                    if (
-                        nextColorCtx.state === 'selected' &&
-                        node.tagName &&
-                        (node.tagName.toLowerCase() === 'span' || node.tagName.toLowerCase() === 'font') &&
-                        formatOptions.colorSelected &&
-                        hasSelectedColor(node, formatOptions.selectedColors)
-                    ) {
-                        for (let child = node.firstChild; child; child = child.nextSibling) {
-                            walkNode(child, parent, nextColorCtx); // parent (not clonedElement) = merge works
-                        }
-                        return;
-                    }
-                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
