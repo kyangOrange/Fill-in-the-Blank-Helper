@@ -469,6 +469,7 @@ header h1 {
     position: relative;
     vertical-align: baseline;
     max-width: 100%;
+    line-height: normal;
 }
 
 /* Only reserve space when feedback is visible */
@@ -558,6 +559,7 @@ header h1 {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
+    line-height: inherit;
 }
 
 .blank-button.correct-answer {
