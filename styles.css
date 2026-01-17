@@ -464,7 +464,7 @@ header h1 {
 }
 
 .output-area .blank-button-wrapper {
-    display: inline-block !important;
+    display: inline;
     vertical-align: baseline;
     max-width: 100%;
 }

@@ -668,28 +668,50 @@ document.addEventListener('DOMContentLoaded', function() {
         const area = document.getElementById('output');
         if (!area) return;
 
-        const right = area.getBoundingClientRect().right - 6;
+        const areaRect = area.getBoundingClientRect();
+        const csArea = getComputedStyle(area);
+        const innerRight =
+            areaRect.right
+            - (parseFloat(csArea.paddingRight) || 0)
+            - (parseFloat(csArea.borderRightWidth) || 0);
 
-        area.querySelectorAll('.blank-button').forEach(btn => {
+        const buttons = Array.from(area.querySelectorAll('.blank-button'));
+
+        // Pass 1: for blank/hint, temporarily shrink to force it to stay on the current line
+        const clampTargets = [];
+        for (const btn of buttons) {
             const state = btn.getAttribute('data-state');
-
             if (state === 'blank' || state === 'hint') {
-                const r = btn.getBoundingClientRect();
-                const avail = Math.max(24, right - r.left);
-
+                btn.style.display = 'inline-block';
                 btn.style.whiteSpace = 'nowrap';
                 btn.style.overflow = 'hidden';
                 btn.style.textOverflow = 'clip';
-                btn.style.maxWidth = `${avail}px`;
-                btn.style.display = 'inline-block';
+
+                // shrink first so browser reflows it onto the current line instead of wrapping
+                btn.style.maxWidth = '1px';
+                clampTargets.push(btn);
             } else {
-                // allow answer to wrap normally
+                // answer state can wrap normally
                 btn.style.maxWidth = '';
                 btn.style.overflow = 'visible';
                 btn.style.textOverflow = '';
                 btn.style.whiteSpace = 'normal';
             }
-        });
+        }
+
+        // Force layout/reflow NOW (so the shrink takes effect)
+        void area.offsetHeight;
+
+        // Pass 2: expand maxWidth to exactly "space remaining on this line"
+        for (const btn of clampTargets) {
+            const r = btn.getBoundingClientRect();
+            const csBtn = getComputedStyle(btn);
+            const ml = parseFloat(csBtn.marginLeft) || 0;
+            const mr = parseFloat(csBtn.marginRight) || 0;
+
+            const avail = Math.max(24, innerRight - r.left - ml - mr - 2);
+            btn.style.maxWidth = `${avail}px`;
+        }
     }
     
     function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons, formatOptions) {
