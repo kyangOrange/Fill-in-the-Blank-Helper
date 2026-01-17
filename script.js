@@ -668,49 +668,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const area = document.getElementById('output');
         if (!area) return;
 
-        const areaRect = area.getBoundingClientRect();
-        const csArea = getComputedStyle(area);
-        const innerRight =
-            areaRect.right
-            - (parseFloat(csArea.paddingRight) || 0)
-            - (parseFloat(csArea.borderRightWidth) || 0);
-
         const buttons = Array.from(area.querySelectorAll('.blank-button'));
-
-        // Pass 1: for blank/hint, temporarily shrink to force it to stay on the current line
-        const clampTargets = [];
+        
         for (const btn of buttons) {
             const state = btn.getAttribute('data-state');
+            
             if (state === 'blank' || state === 'hint') {
+                // Remove any existing width constraint first
+                btn.style.width = '';
+                btn.style.maxWidth = '';
+                
+                // Set to nowrap and inline-block
                 btn.style.display = 'inline-block';
                 btn.style.whiteSpace = 'nowrap';
                 btn.style.overflow = 'hidden';
                 btn.style.textOverflow = 'clip';
-
-                // shrink first so browser reflows it onto the current line instead of wrapping
-                btn.style.maxWidth = '1px';
-                clampTargets.push(btn);
+                
+                // Force a layout calculation
+                void btn.offsetWidth;
+                
+                // Get current position
+                const btnRect = btn.getBoundingClientRect();
+                const areaRect = area.getBoundingClientRect();
+                
+                // Calculate available space from button's left edge to container's right edge
+                const csArea = getComputedStyle(area);
+                const paddingRight = parseFloat(csArea.paddingRight) || 0;
+                const borderRight = parseFloat(csArea.borderRightWidth) || 0;
+                const containerRight = areaRect.right - paddingRight - borderRight;
+                
+                const available = Math.max(20, containerRight - btnRect.left - 4);
+                
+                // Set fixed width to prevent wrapping
+                btn.style.width = `${available}px`;
             } else {
-                // answer state can wrap normally
+                // answer state - clear all constraints, allow normal wrapping
+                btn.style.width = '';
                 btn.style.maxWidth = '';
-                btn.style.overflow = 'visible';
+                btn.style.overflow = '';
                 btn.style.textOverflow = '';
-                btn.style.whiteSpace = 'normal';
+                btn.style.whiteSpace = '';
             }
-        }
-
-        // Force layout/reflow NOW (so the shrink takes effect)
-        void area.offsetHeight;
-
-        // Pass 2: expand maxWidth to exactly "space remaining on this line"
-        for (const btn of clampTargets) {
-            const r = btn.getBoundingClientRect();
-            const csBtn = getComputedStyle(btn);
-            const ml = parseFloat(csBtn.marginLeft) || 0;
-            const mr = parseFloat(csBtn.marginRight) || 0;
-
-            const avail = Math.max(24, innerRight - r.left - ml - mr - 2);
-            btn.style.maxWidth = `${avail}px`;
         }
     }
     
