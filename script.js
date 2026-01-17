@@ -1732,5 +1732,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 fullscreenBtn.textContent = 'Fullscreen';
             }
         }
+        // Clamp blanks after fullscreen change
+        requestAnimationFrame(clampBlanksToLineEnd);
+    });
+    
+    // Clamp blanks on window resize
+    window.addEventListener('resize', function() {
+        requestAnimationFrame(clampBlanksToLineEnd);
     });
 });
