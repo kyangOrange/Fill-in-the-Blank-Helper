@@ -667,6 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formatOptions = formatOptions || {};
         
         // Track the last color-run blank for merging consecutive segments
+        // Reset at the start of each processing session
         let lastColorRun = null; 
         // { parent: Node, wrapper: HTMLElement, button: HTMLElement, css: string }
         
