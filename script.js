@@ -671,35 +671,38 @@ document.addEventListener('DOMContentLoaded', function() {
         const area = document.getElementById('output');
         if (!area) return;
 
-        const buttons = Array.from(area.querySelectorAll('.blank-button'));
-        
-        for (const btn of buttons) {
+        const areaRect = area.getBoundingClientRect();
+        const csArea = getComputedStyle(area);
+        const innerRight =
+            areaRect.right
+            - (parseFloat(csArea.paddingRight) || 0)
+            - (parseFloat(csArea.borderRightWidth) || 0);
+
+        const wrappers = Array.from(area.querySelectorAll('.blank-button-wrapper'));
+
+        // PASS 1: shrink wrappers for blank/hint so browser keeps them on the current line
+        const targets = [];
+        for (const w of wrappers) {
+            const btn = w.querySelector('.blank-button');
+            if (!btn) continue;
+
             const state = btn.getAttribute('data-state');
-            
             if (state === 'blank' || state === 'hint') {
-                // For blank/hint: keep nowrap but set max-width to prevent overflow
-                const areaRect = area.getBoundingClientRect();
-                const csArea = getComputedStyle(area);
-                const paddingRight = parseFloat(csArea.paddingRight) || 0;
-                const borderRight = parseFloat(csArea.borderRightWidth) || 0;
-                const containerRight = areaRect.right - paddingRight - borderRight;
-                
-                // Get button position
-                const btnRect = btn.getBoundingClientRect();
-                const available = Math.max(20, containerRight - btnRect.left - 4);
-                
-                // Use max-width (not width) so button can shrink if needed but won't exceed available space
-                btn.style.maxWidth = `${available}px`;
-                btn.style.whiteSpace = 'nowrap';
-                btn.style.overflow = 'hidden';
-                btn.style.textOverflow = 'clip';
+                w.style.maxWidth = '1px';         // force reflow onto current line
+                targets.push(w);
             } else {
-                // answer state - allow normal wrapping
-                btn.style.maxWidth = '';
-                btn.style.whiteSpace = 'normal';
-                btn.style.overflow = 'visible';
-                btn.style.textOverflow = '';
+                w.style.maxWidth = '';
             }
+        }
+
+        // Force reflow
+        void area.offsetHeight;
+
+        // PASS 2: expand wrapper to exactly remaining space
+        for (const w of targets) {
+            const r = w.getBoundingClientRect();
+            const avail = Math.max(24, innerRight - r.left - 2);
+            w.style.maxWidth = `${avail}px`;
         }
     }
     
