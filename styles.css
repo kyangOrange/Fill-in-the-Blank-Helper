@@ -558,6 +558,15 @@ header h1 {
     vertical-align: middle;
 }
 
+/* Answer state: allow wrapping to show full answer */
+.output-area .blank-button[data-state="answer"] {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
 .blank-button.correct-answer {
     background: rgba(5, 150, 105, 0.2);
 }

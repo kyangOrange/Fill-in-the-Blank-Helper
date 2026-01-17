@@ -695,8 +695,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 w.style.maxWidth = '';              // clear any previous max-width
                 targets.push(w);
             } else {
+                // Answer state: allow normal wrapping, remove any clamping
                 w.style.width = '';
                 w.style.maxWidth = '';
+                w.style.display = 'inline-block';  // ensure it's still inline-block but without clamping
             }
         }
 
