@@ -994,10 +994,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 colorCtx &&
                 colorCtx.state === 'selected';
             
-            // If not selected-color context, output normal text and reset merge state.
+            // If not selected-color context, output normal text
+            // But don't reset lastColorRun if it's just whitespace - might be between color segments
             if (!inSelectedColor) {
                 parent.appendChild(document.createTextNode(textSeg));
-                lastColorRun = null;
+                // Only reset if text is not just whitespace (whitespace between color spans should preserve merge state)
+                if (textSeg.trim().length > 0) {
+                    lastColorRun = null;
+                }
                 return;
             }
             
