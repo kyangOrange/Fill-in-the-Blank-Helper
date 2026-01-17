@@ -467,7 +467,7 @@ header h1 {
 .output-area .blank-button-wrapper {
     display: inline-block;
     position: relative;
-    vertical-align: baseline;
+    vertical-align: middle;
     max-width: 100%;
     line-height: normal;
 }
@@ -541,7 +541,7 @@ header h1 {
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     line-height: inherit;
-    vertical-align: baseline;
+    vertical-align: middle;
     display: inline-block !important;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
@@ -554,7 +554,7 @@ header h1 {
 
 /* Blank button should size to content, but wrapper will clamp if it would exceed line */
 .output-area .blank-button {
-    vertical-align: baseline;
+    vertical-align: middle;
 }
 
 .blank-button.correct-answer {
@@ -567,7 +567,7 @@ header h1 {
 
 .blank-button * {
     line-height: 1.8;
-    vertical-align: baseline;
+    vertical-align: middle;
     margin: 0;
     padding: 0;
     display: inline !important;
@@ -580,7 +580,7 @@ header h1 {
     font-size: 0.83em;
     line-height: 0;
     position: relative;
-    vertical-align: baseline;
+    vertical-align: middle;
     display: inline !important;
 }
 
