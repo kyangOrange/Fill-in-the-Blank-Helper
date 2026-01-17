@@ -520,12 +520,13 @@ header h1 {
     line-height: 1.8;
     vertical-align: baseline;
     display: inline-block !important;
-    overflow-wrap: anywhere;
-    white-space: normal;
+    white-space: nowrap;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     box-sizing: border-box;
     max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .blank-button.correct-answer {

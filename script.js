@@ -914,12 +914,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Style must be ONLY color (no font-weight, background, underline, etc.)
             const style = (el.getAttribute('style') || '').trim().toLowerCase();
-            if (!style) return false;
+            // If no style but has color attribute, that's also a color-only wrapper
+            if (!style) {
+                const colorAttr = el.getAttribute('color');
+                return !!colorAttr; // If it has color attribute but no style, it's still a color wrapper
+            }
 
             // If style has properties other than color, don't skip wrapper
             const props = style.split(';').map(s => s.trim()).filter(Boolean);
             for (const p of props) {
-                if (!p.startsWith('color:')) return false;
+                const normalizedProp = p.trim();
+                if (!normalizedProp.startsWith('color:')) return false;
             }
 
             return true;
