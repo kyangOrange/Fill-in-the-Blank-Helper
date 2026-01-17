@@ -889,6 +889,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         return normalizeColor(fontColor);
                     }
                 }
+                // Fallback to computed style for inherited colors (common in pasted content from Google Docs/PDFs)
+                try {
+                    const computed = window.getComputedStyle(el).color;
+                    if (computed && computed !== 'rgb(0, 0, 0)' && computed !== '#000000') {
+                        return normalizeColor(computed);
+                    }
+                } catch (e) {
+                    // Ignore errors (element might not be in DOM)
+                }
                 return null;
             }
             
