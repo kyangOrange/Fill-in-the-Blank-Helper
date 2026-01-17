@@ -1613,6 +1613,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.setAttribute('data-state', 'hint');
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
+                wrapper.classList.remove('show-feedback');
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 const sanitizedHtml = convertBlockToInline(storedHtmlContent);
@@ -1620,7 +1621,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
-                feedbackContainer.style.display = 'inline-flex';
+                feedbackContainer.style.display = 'flex';
+                wrapper.classList.add('show-feedback');
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
@@ -1628,6 +1630,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.setAttribute('data-state', 'blank');
                 button.classList.remove('hint-state', 'answer-state');
                 feedbackContainer.style.display = 'none';
+                wrapper.classList.remove('show-feedback');
                 // Don't remove correct-answer or wrong-answer classes - keep the background color
             }
             
