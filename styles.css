@@ -560,6 +560,7 @@ header h1 {
     white-space: nowrap;
     text-overflow: clip;
     line-height: 1.8;
+    margin: 0;
 }
 
 .blank-button.correct-answer {
