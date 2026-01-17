@@ -458,7 +458,8 @@ header h1 {
     font-size: 1.1rem;
     line-height: 1.8;
     white-space: pre-wrap;
-    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .output-area .blank-button-wrapper {

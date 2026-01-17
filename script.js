@@ -1030,9 +1030,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     // Extract HTML content from source structure for the bracket content
                                     const htmlContent = extractHTMLContent(range.match.start + range.match.leftBracket.length, range.match.end - range.match.rightBracket.length);
                                     // Create button with HTML content
-                                    const button = createClickableButton(range.match.content, blankButtons.length, htmlContent);
-                                    blankButtons.push(button);
-                                    parent.appendChild(button);
+                                    const wrapper = createClickableButton(range.match.content, blankButtons.length, htmlContent);
+                                    parent.appendChild(wrapper);
+                                    blankButtons.push(wrapper.querySelector('.blank-button'));
                                     // Add right bracket
                                     parent.appendChild(document.createTextNode(range.match.rightBracket));
                                 } else if (range.match.type === 'capitalized' || 
@@ -1042,9 +1042,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     // Extract HTML content from source structure
                                     const htmlContent = extractHTMLContent(range.match.start, range.match.end);
                                     // Create button with HTML content
-                                    const button = createClickableButton(range.match.content, blankButtons.length, htmlContent);
-                                    blankButtons.push(button);
-                                    parent.appendChild(button);
+                                    const wrapper = createClickableButton(range.match.content, blankButtons.length, htmlContent);
+                                    parent.appendChild(wrapper);
+                                    blankButtons.push(wrapper.querySelector('.blank-button'));
                                 }
                                 
                                 // Mark match as processed
@@ -1096,8 +1096,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         shouldConvert = false;
                         skipDueToMixedColors = true; // Mark that we're skipping due to mixed colors
                     } else {
-                        // Purely one selected color — safe to convert entire element.
-                        shouldConvert = true;
+                        // Purely one selected color — but DON'T convert whole element for color
+                        // Let children/text-node merging handle it to allow proper merging
+                        shouldConvert = false;
                         formatType = 'color';
                     }
                 }
@@ -1238,9 +1239,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Use the extracted text, or fall back to elementText if extraction fails
                     const buttonText = extractedText || (node.textContent || '').trim();
-                    const button = createClickableButton(buttonText, blankButtons.length, elementHtml);
-                    blankButtons.push(button);
-                    parent.appendChild(button);
+                    const wrapper = createClickableButton(buttonText, blankButtons.length, elementHtml);
+                    parent.appendChild(wrapper);
+                    blankButtons.push(wrapper.querySelector('.blank-button'));
                     
                     // Update charOffset to skip over this element's text content ONLY
                     // This ensures adjacent text nodes are processed separately
