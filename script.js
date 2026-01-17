@@ -787,6 +787,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return style.includes('text-decoration') && (style.includes('underline') || style.match(/text-decoration[:\s]*underline/));
         }
         
+        // Helper function to check if element has an explicit color (any color, not just selected)
+        function hasExplicitColor(el) {
+            if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
+            const style = el.getAttribute('style') || '';
+            if (/color\s*:/i.test(style)) return true;
+            if (el.getAttribute('color')) return true;
+            if (el.tagName && el.tagName.toLowerCase() === 'font' && el.getAttribute('color')) return true;
+            return false;
+        }
+        
         // Helper function to check if element has a selected color
         function hasSelectedColor(element, selectedColors) {
             if (!selectedColors || selectedColors.length === 0) return false;
@@ -848,23 +858,140 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        function walkNode(node, parent, parentHasSelectedColor = false) {
-            // Check if SOURCE node's parent (in source tree) has selected color
-            if (!parentHasSelectedColor && node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE && formatOptions.colorSelected && formatOptions.selectedColors) {
-                parentHasSelectedColor = hasSelectedColor(node.parentNode, formatOptions.selectedColors);
+        // Helper function to check if element has any non-selected colored descendants
+        // Strict check: if ANY descendant (at any depth) has a non-selected explicit color, return true
+        function hasNonSelectedColoredDescendant(el, selectedColors) {
+            if (!el || !selectedColors || selectedColors.length === 0) return false;
+            
+            // Find any descendant that explicitly sets a color that is NOT one of the selected colors
+            const descendants = el.querySelectorAll('[style*="color"], font[color], [color]');
+            
+            for (const d of descendants) {
+                if (d === el) continue; // ignore self
+                if (hasExplicitColor(d) && !hasSelectedColor(d, selectedColors)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Helper to get explicit color CSS from an element
+        function getExplicitColorCss(el) {
+            if (!el || el.nodeType !== Node.ELEMENT_NODE) return null;
+            
+            const style = el.getAttribute('style') || '';
+            const m = style.match(/color:\s*([^;]+)/i);
+            if (m) return m[1].trim();
+            
+            const colorAttr = el.getAttribute('color');
+            if (colorAttr) return colorAttr.trim();
+            
+            if (el.tagName && el.tagName.toLowerCase() === 'font') {
+                const fc = el.getAttribute('color');
+                if (fc) return fc.trim();
+            }
+            return null;
+        }
+        
+        // When in selected-color context, turn text into a blank button.
+        // Merges consecutive color-text segments into one blank.
+        function appendTextOrColorBlank(textSeg, parent, colorCtx) {
+            if (!textSeg) return;
+            
+            const colorModeOn = !!formatOptions.colorSelected;
+            const inSelectedColor = colorModeOn && colorCtx && colorCtx.state === 'selected';
+            
+            if (!inSelectedColor) {
+                parent.appendChild(document.createTextNode(textSeg));
+                return;
             }
             
-            if (node.nodeType === Node.TEXT_NODE) {
-                // Skip text nodes if parent (in source tree) has selected color (parent will be processed as whole)
-                // Just update charOffset but don't add to output - parent element will include this text
-                if (parentHasSelectedColor && formatOptions.colorSelected && formatOptions.selectedColors) {
-                    const text = node.textContent;
-                    if (text) {
-                        charOffset += text.length;
+            // Try to merge into previous "color-run" blank if possible.
+            function findMergeTarget() {
+                let n = parent.lastChild;
+                
+                // Skip empty text nodes
+                while (n && n.nodeType === Node.TEXT_NODE && n.textContent === '') n = n.previousSibling;
+                
+                // If last is whitespace text node, check one before it
+                if (n && n.nodeType === Node.TEXT_NODE && /^\s+$/.test(n.textContent)) {
+                    const prev = n.previousSibling;
+                    if (
+                        prev &&
+                        prev.nodeType === Node.ELEMENT_NODE &&
+                        prev.classList.contains('blank-button-wrapper') &&
+                        prev.getAttribute('data-color-run') === 'true'
+                    ) {
+                        return { wrapper: prev, trailingWhitespaceNode: n };
                     }
-                    return;
                 }
                 
+                // If last is directly the wrapper
+                if (
+                    n &&
+                    n.nodeType === Node.ELEMENT_NODE &&
+                    n.classList.contains('blank-button-wrapper') &&
+                    n.getAttribute('data-color-run') === 'true'
+                ) {
+                    return { wrapper: n, trailingWhitespaceNode: null };
+                }
+                
+                return null;
+            }
+            
+            function escapeHtml(s) {
+                return String(s)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+            
+            const target = findMergeTarget();
+            const css = colorCtx.css || '';
+            
+            if (target) {
+                // Absorb whitespace node *into* the same blank run (so it doesn't break into multiple buttons)
+                let toAdd = textSeg;
+                if (target.trailingWhitespaceNode) {
+                    toAdd = target.trailingWhitespaceNode.textContent + textSeg;
+                    target.trailingWhitespaceNode.remove();
+                }
+                
+                const btn = target.wrapper.querySelector('.blank-button');
+                const oldContent = btn.getAttribute('data-content') || '';
+                const newContent = oldContent + toAdd;
+                
+                btn.setAttribute('data-content', newContent);
+                
+                // Keep a simple colored span for the stored HTML
+                const html = css
+                    ? `<span style="color:${css}">${escapeHtml(newContent)}</span>`
+                    : escapeHtml(newContent);
+                
+                btn.setAttribute('data-html-content', html);
+                
+                // If still blank state, update the visual blanks to match new merged length
+                const state = btn.getAttribute('data-state') || 'blank';
+                if (state === 'blank') {
+                    btn.textContent = generateBlankText(newContent);
+                }
+                return;
+            }
+            
+            // No merge target: create a new color-run blank
+            const html = css ? `<span style="color:${css}">${escapeHtml(textSeg)}</span>` : escapeHtml(textSeg);
+            const wrapper = createClickableButton(textSeg, blankButtons.length, html);
+            wrapper.setAttribute('data-color-run', 'true'); // mark as mergeable color-run
+            // Push the button, not the wrapper, to keep counters consistent
+            const button = wrapper.querySelector('.blank-button');
+            blankButtons.push(button);
+            parent.appendChild(wrapper);
+        }
+        
+        function walkNode(node, parent, colorCtx) {
+            colorCtx = colorCtx || { state: 'none', css: null }; // state: 'none' | 'selected' | 'nonselected'
+            
+            if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 if (text) {
                     const nodeStart = charOffset;
@@ -874,8 +1001,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const allOverlappingMatches = matches.filter(m => m.start < nodeEnd && m.end > nodeStart);
                     
                     if (allOverlappingMatches.length === 0) {
-                        // No matches, just add the text
-                        parent.appendChild(document.createTextNode(text));
+                        // No matches, use color context to determine if text should be a blank
+                        appendTextOrColorBlank(text, parent, colorCtx);
                     } else {
                         // Find unprocessed matches for this text node
                         const nodeMatches = allOverlappingMatches
@@ -915,8 +1042,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         for (const range of allRanges) {
                             // Add text before this range
                             if (range.start > lastIndex) {
-                                parent.appendChild(document.createTextNode(text.substring(lastIndex, range.start)));
-        }
+                                appendTextOrColorBlank(text.substring(lastIndex, range.start), parent, colorCtx);
+                            }
         
                             if (!range.isSkip && range.match && !processedMatches.has(range.match)) {
                                 // Process the match
@@ -952,8 +1079,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         // Add remaining text after all ranges
-        if (lastIndex < text.length) {
-                            parent.appendChild(document.createTextNode(text.substring(lastIndex)));
+                        if (lastIndex < text.length) {
+                            appendTextOrColorBlank(text.substring(lastIndex), parent, colorCtx);
                         }
                     }
                     charOffset += text.length;
@@ -961,30 +1088,59 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 // Check if element itself has selected color FIRST - if so, convert entire element as one
                 const elementText = node.textContent || '';
+                
+                // Compute inherited color context for children
+                const explicitCss = getExplicitColorCss(node);
+                let nextColorCtx = { ...colorCtx };
+                
+                if (explicitCss) {
+                    if (formatOptions.colorSelected && hasSelectedColor(node, formatOptions.selectedColors)) {
+                        nextColorCtx = { state: 'selected', css: explicitCss };
+                    } else {
+                        nextColorCtx = { state: 'nonselected', css: explicitCss };
+                    }
+                }
+                
                 let shouldConvert = false;
                 let formatType = null;
                 
-                // Check if element has selected color first (before checking parent)
-                if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
-                    shouldConvert = true;
-                    formatType = 'color';
+                // Check if element has selected color
+                const colorIsSelected = formatOptions.colorSelected &&
+                                       formatOptions.selectedColors &&
+                                       hasSelectedColor(node, formatOptions.selectedColors);
+                
+                // Handle color conversion: if container has mixed colors, skip converting the whole thing
+                // but still traverse children to find smaller valid colored spans
+                let skipDueToMixedColors = false;
+                if (colorIsSelected) {
+                    if (hasNonSelectedColoredDescendant(node, formatOptions.selectedColors)) {
+                        // The container mixes colors — don't convert the whole thing,
+                        // but DO traverse its children to find smaller colored spans.
+                        shouldConvert = false;
+                        skipDueToMixedColors = true; // Mark that we're skipping due to mixed colors
+                    } else {
+                        // Purely one selected color — safe to convert entire element.
+                        shouldConvert = true;
+                        formatType = 'color';
+                    }
                 }
                 
-                if (formatOptions.italicSelected && isItalic(node)) {
-                    shouldConvert = true;
-                    formatType = 'italic';
-                } else if (formatOptions.boldSelected && isBold(node)) {
-                    shouldConvert = true;
-                    formatType = 'bold';
-                } else if (formatOptions.highlightedSelected && isHighlighted(node)) {
-                    shouldConvert = true;
-                    formatType = 'highlighted';
-                } else if (formatOptions.underlinedSelected && isUnderlined(node)) {
-                    shouldConvert = true;
-                    formatType = 'underlined';
-                } else if (formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors)) {
-                    shouldConvert = true;
-                    formatType = 'color';
+                // Check other formats if color conversion was skipped or not applicable
+                // BUT: if we skipped due to mixed colors, don't check other formats - just process children
+                if (!skipDueToMixedColors) {
+                    if (!shouldConvert && formatOptions.italicSelected && isItalic(node)) {
+                        shouldConvert = true;
+                        formatType = 'italic';
+                    } else if (!shouldConvert && formatOptions.boldSelected && isBold(node)) {
+                        shouldConvert = true;
+                        formatType = 'bold';
+                    } else if (!shouldConvert && formatOptions.highlightedSelected && isHighlighted(node)) {
+                        shouldConvert = true;
+                        formatType = 'highlighted';
+                    } else if (!shouldConvert && formatOptions.underlinedSelected && isUnderlined(node)) {
+                        shouldConvert = true;
+                        formatType = 'underlined';
+                    }
                 }
                 
                 if (shouldConvert && elementText.trim()) {
@@ -996,6 +1152,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (node.nodeType === Node.TEXT_NODE) {
                             elementCharCount += (node.textContent || '').length;
                         } else if (node.nodeType === Node.ELEMENT_NODE) {
+                            // Only count children, not siblings
                             for (let child = node.firstChild; child; child = child.nextSibling) {
                                 countChars(child);
                             }
@@ -1003,6 +1160,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     countChars(node);
                     const elementEndOffset = elementStartOffset + elementCharCount;
+                    
+                    // CRITICAL: Verify that elementText matches what we counted
+                    // This ensures we're not including adjacent text
+                    const actualElementText = node.textContent || '';
+                    const countedTextLength = elementCharCount;
+                    const actualTextLength = actualElementText.length;
+                    
+                    // If there's a significant mismatch, something is wrong
+                    if (Math.abs(countedTextLength - actualTextLength) > 5) {
+                        // Recalculate more carefully
+                        elementCharCount = 0;
+                        countChars(node);
+                        const recalculatedEndOffset = elementStartOffset + elementCharCount;
+                        // Use the more accurate calculation
+                    }
                     
                     // Mark any capitalized matches that overlap with this element as processed
                     for (const match of matches) {
@@ -1020,11 +1192,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // For color elements, preserve the entire innerHTML including all child elements
                     if (formatType === 'color') {
-                        elementHtml = node.innerHTML || elementText.trim();
+                        // CRITICAL: Extract HTML content ONLY from direct children of this element
+                        // This ensures we don't accidentally include adjacent text nodes
+                        const tempContainer = document.createElement('div');
+                        
+                        // Only clone and append direct children, not siblings
+                        for (let child = node.firstChild; child; child = child.nextSibling) {
+                            tempContainer.appendChild(child.cloneNode(true));
+                        }
+                        
+                        // Get innerHTML from the container (only contains direct children)
+                        elementHtml = tempContainer.innerHTML || '';
+                        
+                        // Remove leading/trailing whitespace
+                        elementHtml = elementHtml.trim();
+                        
+                        // If elementHtml is empty after trimming, fall back to textContent
+                        if (!elementHtml && elementText.trim()) {
+                            elementHtml = elementText.trim();
+                        }
+                        
                         // Preserve the style attribute if present
                         const style = node.getAttribute('style') || '';
-                        if (style) {
-                            elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                        if (style && elementHtml) {
+                            // Check if elementHtml already has a span with this exact style to avoid double-wrapping
+                            const styleMatch = style.match(/color:\s*([^;]+)/i);
+                            if (styleMatch) {
+                                const colorValue = styleMatch[1].trim();
+                                // Check if the HTML already contains this color style (avoid double-wrapping)
+                                const hasColorStyle = elementHtml.includes(`color:${colorValue}`) || 
+                                                     elementHtml.includes(`color: ${colorValue}`) ||
+                                                     elementHtml.includes(`"${style}"`) ||
+                                                     elementHtml.includes(`'${style}'`);
+                                
+                                if (!hasColorStyle) {
+                                    elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                                }
+                            } else {
+                                // Wrap with the full style if no color match found
+                                elementHtml = `<span style="${style}">${elementHtml}</span>`;
+                            }
                         }
                     } else {
                         // For other formatting types, use simpler wrapping
@@ -1046,26 +1253,31 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
-                    const button = createClickableButton(elementText.trim(), blankButtons.length, elementHtml);
+                    // CRITICAL: Extract text content from the HTML we extracted, not from node.textContent
+                    // This ensures the text matches exactly what's in the HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = elementHtml;
+                    const extractedText = (tempDiv.textContent || '').trim();
+                    
+                    // Use the extracted text, or fall back to elementText if extraction fails
+                    const buttonText = extractedText || (node.textContent || '').trim();
+                    const button = createClickableButton(buttonText, blankButtons.length, elementHtml);
                     blankButtons.push(button);
                     parent.appendChild(button);
                     
-                    // Update charOffset to skip over this element's text content
+                    // Update charOffset to skip over this element's text content ONLY
+                    // This ensures adjacent text nodes are processed separately
                     charOffset = elementEndOffset;
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
-                    // Check if this element has selected color (to pass to children)
-                    const nodeHasSelectedColor = formatOptions.colorSelected && formatOptions.selectedColors && hasSelectedColor(node, formatOptions.selectedColors);
-                    const shouldSkipChildren = parentHasSelectedColor || nodeHasSelectedColor;
-                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
                     
-                    // Recursively process child nodes, but skip checking children if this element has selected color
+                    // Recursively process child nodes, passing color context
                     for (let child = node.firstChild; child; child = child.nextSibling) {
-                        walkNode(child, clonedElement, shouldSkipChildren);
+                        walkNode(child, clonedElement, nextColorCtx);
                     }
                 }
             }
@@ -1073,7 +1285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Start walking from sourceNode's children
         for (let child = sourceNode.firstChild; child; child = child.nextSibling) {
-            walkNode(child, targetParent, false);
+            walkNode(child, targetParent, { state: 'none', css: null });
         }
     }
     

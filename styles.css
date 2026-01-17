@@ -516,10 +516,12 @@ header h1 {
     transition: all 0.2s ease;
     line-height: 1.8;
     vertical-align: baseline;
-    display: inline-block;
+    display: inline;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
     max-width: calc(100% - 0.25rem);
     box-sizing: border-box;
 }
