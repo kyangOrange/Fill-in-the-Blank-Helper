@@ -674,40 +674,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const state = btn.getAttribute('data-state');
             
             if (state === 'blank' || state === 'hint') {
-                // Remove any existing width constraint first
-                btn.style.width = '';
-                btn.style.maxWidth = '';
-                
-                // Set to nowrap and inline-block
-                btn.style.display = 'inline-block';
-                btn.style.whiteSpace = 'nowrap';
-                btn.style.overflow = 'hidden';
-                btn.style.textOverflow = 'clip';
-                
-                // Force a layout calculation
-                void btn.offsetWidth;
-                
-                // Get current position
-                const btnRect = btn.getBoundingClientRect();
+                // For blank/hint: keep nowrap but set max-width to prevent overflow
                 const areaRect = area.getBoundingClientRect();
-                
-                // Calculate available space from button's left edge to container's right edge
                 const csArea = getComputedStyle(area);
                 const paddingRight = parseFloat(csArea.paddingRight) || 0;
                 const borderRight = parseFloat(csArea.borderRightWidth) || 0;
                 const containerRight = areaRect.right - paddingRight - borderRight;
                 
+                // Get button position
+                const btnRect = btn.getBoundingClientRect();
                 const available = Math.max(20, containerRight - btnRect.left - 4);
                 
-                // Set fixed width to prevent wrapping
-                btn.style.width = `${available}px`;
+                // Use max-width (not width) so button can shrink if needed but won't exceed available space
+                btn.style.maxWidth = `${available}px`;
+                btn.style.whiteSpace = 'nowrap';
+                btn.style.overflow = 'hidden';
+                btn.style.textOverflow = 'clip';
             } else {
-                // answer state - clear all constraints, allow normal wrapping
-                btn.style.width = '';
+                // answer state - allow normal wrapping
                 btn.style.maxWidth = '';
-                btn.style.overflow = '';
+                btn.style.whiteSpace = 'normal';
+                btn.style.overflow = 'visible';
                 btn.style.textOverflow = '';
-                btn.style.whiteSpace = '';
             }
         }
     }
