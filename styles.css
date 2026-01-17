@@ -559,7 +559,7 @@ header h1 {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
-    line-height: inherit;
+    line-height: 1.8;
 }
 
 .blank-button.correct-answer {
