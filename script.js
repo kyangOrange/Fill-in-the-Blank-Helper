@@ -660,8 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateAccuracy();
         
-        // Clamp blanks to end of current line after processing
-        requestAnimationFrame(clampBlanksToLineEnd);
     }
     
     function clampBlanksToLineEnd() {
@@ -1628,8 +1626,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update blank counter
             updateBlankCounterFromOutput();
             
-            // Clamp blanks to end of current line after state change
-            requestAnimationFrame(clampBlanksToLineEnd);
         }
         
         button.addEventListener('click', handleButtonClick);
@@ -1725,12 +1721,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 fullscreenBtn.textContent = 'Fullscreen';
             }
         }
-        // Clamp blanks after fullscreen change
-        requestAnimationFrame(clampBlanksToLineEnd);
-    });
-    
-    // Clamp blanks on window resize
-    window.addEventListener('resize', function() {
-        requestAnimationFrame(clampBlanksToLineEnd);
     });
 });

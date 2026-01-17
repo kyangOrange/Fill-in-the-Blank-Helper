@@ -519,13 +519,18 @@ header h1 {
     transition: all 0.2s ease;
     line-height: 1.8;
     vertical-align: baseline;
-    display: inline-block !important;
-    white-space: nowrap;
+    display: inline !important;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     box-sizing: border-box;
+}
+
+.blank-button[data-state="blank"],
+.blank-button[data-state="hint"] {
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: clip;
+    max-width: 100%;
 }
 
 .blank-button.correct-answer {
