@@ -73,6 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update blank counter
             updateBlankCounterFromOutput();
+            
+            // Clamp blanks to end of current line after state change
+            requestAnimationFrame(clampBlanksToLineEnd);
         });
     }
     
@@ -660,6 +663,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateAccuracy();
         
+        // Clamp blanks to end of current line after processing
+        requestAnimationFrame(clampBlanksToLineEnd);
     }
     
     function clampBlanksToLineEnd() {

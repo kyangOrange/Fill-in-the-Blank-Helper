@@ -463,10 +463,27 @@ header h1 {
     overflow-x: auto;
 }
 
+/* Make wrapper be the layout unit */
 .output-area .blank-button-wrapper {
-    display: inline;
+    display: inline-block;
+    position: relative;
     vertical-align: baseline;
     max-width: 100%;
+}
+
+/* Only reserve space when feedback is visible */
+.output-area .blank-button-wrapper.show-feedback {
+    padding-right: 3.75rem; /* space for ✓ ✗ */
+}
+
+/* Feedback sits on the right, doesn't affect line-breaking */
+.output-area .blank-button-wrapper .feedback-buttons {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .output-section:fullscreen {
@@ -506,6 +523,7 @@ header h1 {
     padding: 0.5rem 0.75rem;
 }
 
+/* The actual blank must clip inside the wrapper */
 .blank-button {
     background: rgba(0, 0, 0, 0.03);
     border: none;
@@ -519,18 +537,14 @@ header h1 {
     transition: all 0.2s ease;
     line-height: 1.8;
     vertical-align: baseline;
-    display: inline !important;
+    display: inline-block !important;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     box-sizing: border-box;
-}
-
-.blank-button[data-state="blank"],
-.blank-button[data-state="hint"] {
-    white-space: nowrap;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: clip;
-    max-width: 100%;
+    white-space: nowrap;
 }
 
 .blank-button.correct-answer {
