@@ -663,8 +663,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateAccuracy();
         
-        // Clamp blanks to end of current line after processing
-        requestAnimationFrame(clampBlanksToLineEnd);
+        // Clamp blanks to end of current line after processing (use double RAF to ensure layout is done)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(clampBlanksToLineEnd);
+        });
     }
     
     function clampBlanksToLineEnd() {
