@@ -668,26 +668,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const area = document.getElementById('output');
         if (!area) return;
 
-        const areaRect = area.getBoundingClientRect();
-        const right = areaRect.right - 6; // small padding
+        const right = area.getBoundingClientRect().right - 6;
 
-        const buttons = area.querySelectorAll('.blank-button');
-        buttons.forEach(btn => {
+        area.querySelectorAll('.blank-button').forEach(btn => {
             const state = btn.getAttribute('data-state');
 
-            // Only clamp when blank/hint (you want it to stop at line end)
             if (state === 'blank' || state === 'hint') {
-                // Measure where the button starts on the current line
                 const r = btn.getBoundingClientRect();
                 const avail = Math.max(24, right - r.left);
 
-                btn.style.display = 'inline-block';
-                btn.style.whiteSpace = 'nowrap';   // prevents wrapping
-                btn.style.overflow = 'hidden';     // prevents overflow
-                btn.style.textOverflow = 'clip';   // just cut off at line end
+                btn.style.whiteSpace = 'nowrap';
+                btn.style.overflow = 'hidden';
+                btn.style.textOverflow = 'clip';
                 btn.style.maxWidth = `${avail}px`;
+                btn.style.display = 'inline-block';
             } else {
-                // When showing the answer, let it wrap normally
+                // allow answer to wrap normally
                 btn.style.maxWidth = '';
                 btn.style.overflow = 'visible';
                 btn.style.textOverflow = '';
