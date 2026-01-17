@@ -98,7 +98,7 @@ After pasting and processing, the answers in the selected formats will become cl
 - **Bold Text**: Detects text formatted with `<b>`, `<strong>`, or `font-weight: bold/700+`
 - **Highlighted Text**: Detects text formatted with `<mark>` or background-color styling
 - **Underlined Text**: Detects text formatted with `<u>` or `text-decoration: underline`
-- **Colored Text**: Detects text with specific color styling. Automatically identifies all colors in pasted text, allows selection of which colors to process as blanks. Supports hex colors, RGB/RGBA, and named colors. Preserves complex formatting including superscripts and subscripts
+- **Colored Text**: Detects text with specific color styling. Automatically identifies all colors in pasted text, allows selection of which colors to process as blanks. Detected colors are initially deselected - click on them to select which colors should be processed as blanks. Supports hex colors, RGB/RGBA, and named colors. Preserves complex formatting including superscripts and subscripts
 
 ### Format Selector
 - Collapsible dropdown menu located above the output area
