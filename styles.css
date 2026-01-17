@@ -536,7 +536,7 @@ header h1 {
     cursor: pointer;
     font-size: inherit;
     font-family: inherit;
-    margin: 0;
+    margin: 0.125rem 0;
     padding: 0;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
