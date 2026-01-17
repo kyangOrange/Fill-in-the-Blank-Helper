@@ -995,11 +995,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 colorCtx.state === 'selected';
             
             // If not selected-color context, output normal text
-            // But don't reset lastColorRun if it's just whitespace - might be between color segments
+            // Don't reset lastColorRun if it's just whitespace/punctuation - might be between color segments that should merge
             if (!inSelectedColor) {
                 parent.appendChild(document.createTextNode(textSeg));
-                // Only reset if text is not just whitespace (whitespace between color spans should preserve merge state)
-                if (textSeg.trim().length > 0) {
+                // Only reset if text contains actual words (whitespace/punctuation between color spans should preserve merge state)
+                // Check if text is just whitespace, punctuation, or short separators
+                const trimmed = textSeg.trim();
+                if (trimmed.length === 0 || /^[\s.,;:!?'"()\-–—]+$/.test(textSeg)) {
+                    // Keep lastColorRun - this is likely between colored segments
+                } else {
+                    // Actual text content - reset merge state
                     lastColorRun = null;
                 }
                 return;
