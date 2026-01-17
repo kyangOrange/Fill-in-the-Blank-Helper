@@ -484,6 +484,10 @@ header h1 {
     transform: translateY(-50%);
     white-space: nowrap;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    z-index: 1;
 }
 
 .output-section:fullscreen {
@@ -605,13 +609,7 @@ header h1 {
     max-width: 100%;
 }
 
-.feedback-buttons {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-left: 0.25rem;
-    vertical-align: middle;
-}
+/* .feedback-buttons styling is now handled by .output-area .blank-button-wrapper .feedback-buttons above */
 
 .feedback-btn {
     width: 1.5rem;
