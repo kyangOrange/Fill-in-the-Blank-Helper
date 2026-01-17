@@ -551,6 +551,15 @@ header h1 {
     white-space: nowrap;
 }
 
+/* Blank button inside wrapper should fill wrapper width */
+.output-area .blank-button {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 .blank-button.correct-answer {
     background: rgba(5, 150, 105, 0.2);
 }
@@ -602,12 +611,7 @@ header h1 {
 }
 
 
-.blank-button-wrapper {
-    display: inline;
-    vertical-align: baseline;
-    line-height: 1.8;
-    max-width: 100%;
-}
+/* .blank-button-wrapper rule removed - using .output-area .blank-button-wrapper instead with inline-block */
 
 /* .feedback-buttons styling is now handled by .output-area .blank-button-wrapper .feedback-buttons above */
 

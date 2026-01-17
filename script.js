@@ -682,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const wrappers = Array.from(area.querySelectorAll('.blank-button-wrapper'));
 
-        // PASS 1: shrink wrappers for blank/hint so browser keeps them on the current line
+        // PASS 1: force shrink so the wrapper is willing to sit on the current line
         const targets = [];
         for (const w of wrappers) {
             const btn = w.querySelector('.blank-button');
@@ -690,21 +690,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const state = btn.getAttribute('data-state');
             if (state === 'blank' || state === 'hint') {
-                w.style.maxWidth = '1px';         // force reflow onto current line
+                w.style.display = 'inline-block';   // defeats any CSS override
+                w.style.width = '1px';              // force reflow attempt
                 targets.push(w);
             } else {
-                w.style.maxWidth = '';
+                w.style.width = '';
             }
         }
 
         // Force reflow
         void area.offsetHeight;
 
-        // PASS 2: expand wrapper to exactly remaining space
+        // PASS 2: expand wrapper to exactly remaining space on that line
         for (const w of targets) {
             const r = w.getBoundingClientRect();
             const avail = Math.max(24, innerRight - r.left - 2);
-            w.style.maxWidth = `${avail}px`;
+            w.style.width = `${avail}px`;
         }
     }
     
