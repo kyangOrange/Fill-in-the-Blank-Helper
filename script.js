@@ -692,20 +692,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (state === 'blank' || state === 'hint') {
                 w.style.display = 'inline-block';   // defeats any CSS override
                 w.style.width = '1px';              // force reflow attempt
+                w.style.maxWidth = '';              // clear any previous max-width
                 targets.push(w);
             } else {
                 w.style.width = '';
+                w.style.maxWidth = '';
             }
         }
 
         // Force reflow
         void area.offsetHeight;
 
-        // PASS 2: expand wrapper to exactly remaining space on that line
+        // PASS 2: set wrapper max-width to available space, but let button size naturally
         for (const w of targets) {
             const r = w.getBoundingClientRect();
             const avail = Math.max(24, innerRight - r.left - 2);
-            w.style.width = `${avail}px`;
+            // Use max-width so button can be shorter than available space
+            w.style.maxWidth = `${avail}px`;
+            w.style.width = '';  // Let wrapper size to content (button), but clamped by max-width
         }
     }
     

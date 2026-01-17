@@ -551,14 +551,13 @@ header h1 {
     white-space: nowrap;
 }
 
-/* Blank button inside wrapper should fill wrapper width but maintain inline flow */
+/* Blank button should size to content, but wrapper will clamp if it would exceed line */
 .output-area .blank-button {
     display: inline-block;
-    width: 100%;
-    min-width: 0;
+    vertical-align: baseline;
     overflow: hidden;
     white-space: nowrap;
-    vertical-align: baseline;
+    text-overflow: clip;
 }
 
 .blank-button.correct-answer {
