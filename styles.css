@@ -517,8 +517,7 @@ header h1 {
     line-height: 1.8;
     vertical-align: baseline;
     display: inline;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
     white-space: normal;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
@@ -578,13 +577,10 @@ header h1 {
 
 
 .blank-button-wrapper {
-    display: inline-block;
+    display: inline;
     vertical-align: baseline;
     line-height: 1.8;
-    word-break: break-word;
-    overflow-wrap: break-word;
     max-width: 100%;
-    box-sizing: border-box;
 }
 
 .feedback-buttons {

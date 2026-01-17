@@ -666,6 +666,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const processedMatches = new Set(); // Track which matches have been processed
         formatOptions = formatOptions || {};
         
+        // Track the last color-run blank for merging consecutive segments
+        let lastColorRun = null; 
+        // { parent: Node, wrapper: HTMLElement, button: HTMLElement, css: string }
+        
         // Helper function to extract HTML content from source structure at a specific range
         function extractHTMLContent(start, end) {
             let currentOffset = 0;
@@ -898,79 +902,42 @@ document.addEventListener('DOMContentLoaded', function() {
         function appendTextOrColorBlank(textSeg, parent, colorCtx) {
             if (!textSeg) return;
             
-            const colorModeOn = !!formatOptions.colorSelected;
-            const inSelectedColor = colorModeOn && colorCtx && colorCtx.state === 'selected';
+            const inSelectedColor =
+                !!formatOptions.colorSelected &&
+                colorCtx &&
+                colorCtx.state === 'selected';
             
+            // If not selected-color context, output normal text and reset merge state.
             if (!inSelectedColor) {
                 parent.appendChild(document.createTextNode(textSeg));
+                lastColorRun = null;
                 return;
             }
             
-            // Try to merge into previous "color-run" blank if possible.
-            function findMergeTarget() {
-                let n = parent.lastChild;
-                
-                // Skip empty text nodes
-                while (n && n.nodeType === Node.TEXT_NODE && n.textContent === '') n = n.previousSibling;
-                
-                // If last is whitespace text node, check one before it
-                if (n && n.nodeType === Node.TEXT_NODE && /^\s+$/.test(n.textContent)) {
-                    const prev = n.previousSibling;
-                    if (
-                        prev &&
-                        prev.nodeType === Node.ELEMENT_NODE &&
-                        prev.classList.contains('blank-button-wrapper') &&
-                        prev.getAttribute('data-color-run') === 'true'
-                    ) {
-                        return { wrapper: prev, trailingWhitespaceNode: n };
-                    }
-                }
-                
-                // If last is directly the wrapper
-                if (
-                    n &&
-                    n.nodeType === Node.ELEMENT_NODE &&
-                    n.classList.contains('blank-button-wrapper') &&
-                    n.getAttribute('data-color-run') === 'true'
-                ) {
-                    return { wrapper: n, trailingWhitespaceNode: null };
-                }
-                
-                return null;
-            }
-            
-            function escapeHtml(s) {
-                return String(s)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-            }
-            
-            const target = findMergeTarget();
             const css = colorCtx.css || '';
             
-            if (target) {
-                // Absorb whitespace node *into* the same blank run (so it doesn't break into multiple buttons)
-                let toAdd = textSeg;
-                if (target.trailingWhitespaceNode) {
-                    toAdd = target.trailingWhitespaceNode.textContent + textSeg;
-                    target.trailingWhitespaceNode.remove();
-                }
-                
-                const btn = target.wrapper.querySelector('.blank-button');
+            // Merge if the previous thing we emitted was a selected-color blank in the SAME parent + SAME color
+            if (
+                lastColorRun &&
+                lastColorRun.parent === parent &&
+                lastColorRun.css === css
+            ) {
+                const btn = lastColorRun.button;
                 const oldContent = btn.getAttribute('data-content') || '';
-                const newContent = oldContent + toAdd;
+                const newContent = oldContent + textSeg;
                 
                 btn.setAttribute('data-content', newContent);
                 
-                // Keep a simple colored span for the stored HTML
-                const html = css
-                    ? `<span style="color:${css}">${escapeHtml(newContent)}</span>`
-                    : escapeHtml(newContent);
+                // Update stored HTML (keep it simple)
+                const escaped = newContent
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
                 
+                const html = css ? `<span style="color:${css}">${escaped}</span>` : escaped;
                 btn.setAttribute('data-html-content', html);
                 
-                // If still blank state, update the visual blanks to match new merged length
+                // If still blank state, expand blanks to match new length
                 const state = btn.getAttribute('data-state') || 'blank';
                 if (state === 'blank') {
                     btn.textContent = generateBlankText(newContent);
@@ -978,14 +945,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // No merge target: create a new color-run blank
-            const html = css ? `<span style="color:${css}">${escapeHtml(textSeg)}</span>` : escapeHtml(textSeg);
+            // Otherwise create a new blank
+            const escaped = textSeg
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            const html = css ? `<span style="color:${css}">${escaped}</span>` : escaped;
+            
             const wrapper = createClickableButton(textSeg, blankButtons.length, html);
-            wrapper.setAttribute('data-color-run', 'true'); // mark as mergeable color-run
-            // Push the button, not the wrapper, to keep counters consistent
-            const button = wrapper.querySelector('.blank-button');
-            blankButtons.push(button);
             parent.appendChild(wrapper);
+            
+            const btn = wrapper.querySelector('.blank-button');
+            
+            // IMPORTANT: blankButtons should store the actual button elements (not wrappers)
+            blankButtons.push(btn);
+            
+            lastColorRun = { parent, wrapper, button: btn, css };
         }
         
         function walkNode(node, parent, colorCtx) {
