@@ -560,11 +560,12 @@ header h1 {
 
 /* Answer state: allow wrapping to show full answer */
 .output-area .blank-button[data-state="answer"] {
-    white-space: normal;
-    overflow: visible;
+    white-space: normal !important;
+    overflow: visible !important;
     text-overflow: clip;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .blank-button.correct-answer {
