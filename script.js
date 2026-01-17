@@ -1010,6 +1010,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Don't create blanks for empty or whitespace-only text
+            const trimmed = textSeg.trim();
+            if (!trimmed || trimmed.length === 0) {
+                // Just whitespace - output as normal text and don't create a blank
+                parent.appendChild(document.createTextNode(textSeg));
+                return;
+            }
+            
             const css = colorCtx.css || '';
             
             // Merge if the previous thing we emitted was a selected-color blank in the SAME parent + SAME color
