@@ -659,6 +659,41 @@ document.addEventListener('DOMContentLoaded', function() {
             output.appendChild(accCounter);
         }
         updateAccuracy();
+        
+        // Clamp blanks to end of current line after processing
+        requestAnimationFrame(clampBlanksToLineEnd);
+    }
+    
+    function clampBlanksToLineEnd() {
+        const area = document.getElementById('output');
+        if (!area) return;
+
+        const areaRect = area.getBoundingClientRect();
+        const right = areaRect.right - 6; // small padding
+
+        const buttons = area.querySelectorAll('.blank-button');
+        buttons.forEach(btn => {
+            const state = btn.getAttribute('data-state');
+
+            // Only clamp when blank/hint (you want it to stop at line end)
+            if (state === 'blank' || state === 'hint') {
+                // Measure where the button starts on the current line
+                const r = btn.getBoundingClientRect();
+                const avail = Math.max(24, right - r.left);
+
+                btn.style.display = 'inline-block';
+                btn.style.whiteSpace = 'nowrap';   // prevents wrapping
+                btn.style.overflow = 'hidden';     // prevents overflow
+                btn.style.textOverflow = 'clip';   // just cut off at line end
+                btn.style.maxWidth = `${avail}px`;
+            } else {
+                // When showing the answer, let it wrap normally
+                btn.style.maxWidth = '';
+                btn.style.overflow = 'visible';
+                btn.style.textOverflow = '';
+                btn.style.whiteSpace = 'normal';
+            }
+        });
     }
     
     function processHTMLWithMatches(sourceNode, targetParent, matches, blankButtons, formatOptions) {
@@ -1281,14 +1316,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
-                    // If this element is just a "color wrapper" (common from Google Docs),
-                    // don't clone it; walking children into the SAME parent enables merging.
+                    // If it's a selected-color wrapper (span/font), DON'T clone it.
+                    // Walking children into the SAME parent allows merge into ONE blank.
                     if (
                         nextColorCtx.state === 'selected' &&
-                        isColorOnlyWrapper(node)
+                        node.tagName &&
+                        (node.tagName.toLowerCase() === 'span' || node.tagName.toLowerCase() === 'font') &&
+                        formatOptions.colorSelected &&
+                        hasSelectedColor(node, formatOptions.selectedColors)
                     ) {
                         for (let child = node.firstChild; child; child = child.nextSibling) {
-                            walkNode(child, parent, nextColorCtx); // NOTE parent, not clonedElement
+                            walkNode(child, parent, nextColorCtx); // parent (not clonedElement) = merge works
                         }
                         return;
                     }
@@ -1585,6 +1623,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update blank counter
             updateBlankCounterFromOutput();
+            
+            // Clamp blanks to end of current line after state change
+            requestAnimationFrame(clampBlanksToLineEnd);
         }
         
         button.addEventListener('click', handleButtonClick);
@@ -1680,5 +1721,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 fullscreenBtn.textContent = 'Fullscreen';
             }
         }
+        // Clamp blanks after fullscreen change
+        requestAnimationFrame(clampBlanksToLineEnd);
+    });
+    
+    // Clamp blanks on window resize
+    window.addEventListener('resize', function() {
+        requestAnimationFrame(clampBlanksToLineEnd);
     });
 });
