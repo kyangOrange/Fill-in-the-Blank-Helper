@@ -460,11 +460,13 @@ header h1 {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     word-break: break-word;
+    overflow-x: auto;
 }
 
 .output-area .blank-button-wrapper {
-    display: inline;
+    display: inline-block !important;
     vertical-align: baseline;
+    max-width: 100%;
 }
 
 .output-section:fullscreen {
@@ -517,12 +519,13 @@ header h1 {
     transition: all 0.2s ease;
     line-height: 1.8;
     vertical-align: baseline;
-    display: inline !important;
+    display: inline-block !important;
     overflow-wrap: anywhere;
     white-space: normal;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
     box-sizing: border-box;
+    max-width: 100%;
 }
 
 .blank-button.correct-answer {

@@ -898,6 +898,33 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
         
+        // Helper: check if an element is just a "color wrapper" (span/font with only color styling)
+        function isColorOnlyWrapper(el) {
+            if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
+
+            const tag = (el.tagName || '').toLowerCase();
+            if (tag !== 'span' && tag !== 'font') return false;
+
+            // If it has a class/id or other attributes besides style/color, keep it (might matter).
+            const attrs = Array.from(el.attributes).map(a => a.name.toLowerCase());
+            const allowed = new Set(['style', 'color']);
+            for (const a of attrs) {
+                if (!allowed.has(a)) return false;
+            }
+
+            // Style must be ONLY color (no font-weight, background, underline, etc.)
+            const style = (el.getAttribute('style') || '').trim().toLowerCase();
+            if (!style) return false;
+
+            // If style has properties other than color, don't skip wrapper
+            const props = style.split(';').map(s => s.trim()).filter(Boolean);
+            for (const p of props) {
+                if (!p.startsWith('color:')) return false;
+            }
+
+            return true;
+        }
+
         // When in selected-color context, turn text into a blank button.
         // Merges consecutive color-text segments into one blank.
         function appendTextOrColorBlank(textSeg, parent, colorCtx) {
@@ -1249,6 +1276,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Don't process children - the entire element is already converted to a button
                     return;
                 } else {
+                    // If this element is just a "color wrapper" (common from Google Docs),
+                    // don't clone it; walking children into the SAME parent enables merging.
+                    if (
+                        nextColorCtx.state === 'selected' &&
+                        isColorOnlyWrapper(node)
+                    ) {
+                        for (let child = node.firstChild; child; child = child.nextSibling) {
+                            walkNode(child, parent, nextColorCtx); // NOTE parent, not clonedElement
+                        }
+                        return;
+                    }
+                    
                     // Clone element and its attributes to preserve formatting
                     const clonedElement = node.cloneNode(false);
                     parent.appendChild(clonedElement);
