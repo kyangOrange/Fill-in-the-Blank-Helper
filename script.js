@@ -1652,24 +1652,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
-                // Disable links when showing hint - use both CSS and event prevention
+                // COMPLETELY DISABLE links when showing hint
                 const links = button.querySelectorAll('a');
                 links.forEach(link => {
-                    link.style.pointerEvents = 'none';
-                    link.setAttribute('tabindex', '-1');
-                    // Remove href temporarily and store it
-                    const href = link.getAttribute('href');
-                    if (href) {
+                    // Store href if not already stored
+                    const href = link.getAttribute('href') || link.getAttribute('data-stored-href');
+                    if (href && !link.getAttribute('data-stored-href')) {
                         link.setAttribute('data-stored-href', href);
-                        link.removeAttribute('href');
                     }
-                    // Add click handler to prevent navigation
+                    // Remove href - links can't work without it
+                    link.removeAttribute('href');
+                    // Disable all interaction
+                    link.style.pointerEvents = 'none';
+                    link.style.cursor = 'default';
+                    link.style.textDecoration = 'none';
+                    link.setAttribute('tabindex', '-1');
+                    // Prevent all clicks - capture phase
                     link.addEventListener('click', function(linkE) {
                         linkE.preventDefault();
                         linkE.stopPropagation();
                         linkE.stopImmediatePropagation();
                         return false;
                     }, true);
+                    // Also set onclick
+                    link.onclick = function(linkE) {
+                        linkE.preventDefault();
+                        linkE.stopPropagation();
+                        linkE.stopImmediatePropagation();
+                        return false;
+                    };
                 });
             } else if (state === 2) {
                 // Show full answer with formatting preserved
