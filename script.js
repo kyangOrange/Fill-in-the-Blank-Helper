@@ -1581,7 +1581,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let clickCount = 0;
         
-        function handleButtonClick() {
+        function handleButtonClick(e) {
+            // Prevent any link navigation during button state changes
+            e.preventDefault();
+            e.stopPropagation();
+            
             clickCount++;
             const state = clickCount % 3;
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
@@ -1652,11 +1656,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
-                // Disable links when showing hint
+                // Disable links when showing hint - use both CSS and event prevention
                 const links = button.querySelectorAll('a');
                 links.forEach(link => {
                     link.style.pointerEvents = 'none';
                     link.setAttribute('tabindex', '-1');
+                    // Remove href temporarily and store it
+                    const href = link.getAttribute('href');
+                    if (href) {
+                        link.setAttribute('data-stored-href', href);
+                        link.removeAttribute('href');
+                    }
+                    // Add click handler to prevent navigation
+                    link.addEventListener('click', function(linkE) {
+                        linkE.preventDefault();
+                        linkE.stopPropagation();
+                        linkE.stopImmediatePropagation();
+                        return false;
+                    }, true);
                 });
             } else if (state === 2) {
                 // Show full answer with formatting preserved
@@ -1672,6 +1689,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 links.forEach(link => {
                     link.style.pointerEvents = 'auto';
                     link.removeAttribute('tabindex');
+                    // Restore href if it was stored
+                    const storedHref = link.getAttribute('data-stored-href');
+                    if (storedHref) {
+                        link.setAttribute('href', storedHref);
+                        link.removeAttribute('data-stored-href');
+                    }
                 });
             } else {
                 // Reset to blank (but keep feedback color)
