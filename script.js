@@ -1689,7 +1689,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
                 // Handle links: disable direct navigation but show popup on hover over button text
-                requestAnimationFrame(() => {
+                // Use setTimeout to ensure DOM is ready and state is set
+                setTimeout(() => {
                     const links = button.querySelectorAll('a');
                     if (links.length === 0) return;
                     
@@ -1715,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     
-                    // If there are links, create one popup for the button and show it on hover
+                    // If there are links, create one popup for the button
                     if (hrefs.length > 0) {
                         // Remove existing popup if any
                         if (button._linkPopup && button._linkPopup.parentNode) {
@@ -1724,66 +1725,57 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         const popup = document.createElement('div');
                         popup.id = 'link-popup-' + Date.now();
-                        popup.style.cssText = 'position: fixed; background: #ffffcc; border: 3px solid #ff6600; padding: 12px 18px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.4); z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #0066cc; text-decoration: underline; cursor: pointer; font-weight: bold; pointer-events: auto;';
-                        // Show first link URL (or combine if multiple)
+                        popup.style.cssText = 'position: fixed; background: #ffff00 !important; border: 4px solid #ff0000 !important; padding: 15px 20px !important; border-radius: 8px !important; box-shadow: 0 6px 20px rgba(255,0,0,0.6) !important; z-index: 999999 !important; display: none; white-space: nowrap; font-size: 16px !important; color: #000000 !important; text-decoration: underline !important; cursor: pointer !important; font-weight: bold !important; pointer-events: auto !important;';
+                        // Show first link URL
                         popup.textContent = hrefs[0];
                         document.body.appendChild(popup);
                         
-                        // Function to show popup with proper positioning
+                        // Function to show popup
                         const showPopup = function(e) {
-                            if (e) {
-                                e.stopPropagation();
-                            }
                             const rect = button.getBoundingClientRect();
                             popup.style.display = 'block';
                             popup.style.left = rect.left + 'px';
-                            popup.style.top = (rect.bottom + 10) + 'px';
+                            popup.style.top = (rect.bottom + 15) + 'px';
                             popup.style.zIndex = '999999';
                         };
                         
                         // Function to hide popup
                         const hidePopup = function(e) {
-                            if (e) {
-                                e.stopPropagation();
-                            }
                             setTimeout(() => {
                                 popup.style.display = 'none';
-                            }, 200);
+                            }, 300);
                         };
                         
-                        // Show popup when hovering over the button
-                        button.addEventListener('mouseenter', showPopup, true);
-                        button.addEventListener('mouseover', showPopup, true);
-                        
-                        // Hide popup when leaving button
-                        button.addEventListener('mouseleave', hidePopup, true);
+                        // Attach hover events - don't use capture, use bubble phase and make sure button is ready
+                        wrapper.addEventListener('mouseenter', showPopup);
+                        button.addEventListener('mouseenter', showPopup);
+                        wrapper.addEventListener('mouseleave', hidePopup);
+                        button.addEventListener('mouseleave', hidePopup);
                         
                         // Keep popup visible when hovering it
-                        popup.addEventListener('mouseenter', function(e) {
-                            e.stopPropagation();
+                        popup.addEventListener('mouseenter', function() {
                             popup.style.display = 'block';
-                        }, true);
+                        });
                         
                         // Hide popup when leaving it
-                        popup.addEventListener('mouseleave', function(e) {
-                            e.stopPropagation();
+                        popup.addEventListener('mouseleave', function() {
                             popup.style.display = 'none';
-                        }, true);
+                        });
                         
                         // Click popup to open link
                         popup.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            e.stopImmediatePropagation();
                             window.open(hrefs[0], '_blank');
                             popup.style.display = 'none';
                             return false;
-                        }, true);
+                        });
                         
                         // Store popup reference
                         button._linkPopup = popup;
+                        wrapper._linkPopup = popup;
                     }
-                });
+                }, 50);
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
