@@ -35,8 +35,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Disable links in blank buttons unless answer is fully displayed
-    // This is handled in handleButtonClick by setting pointer-events on links
+    // GLOBAL: Disable ALL links everywhere - prevent any link navigation
+    document.addEventListener('click', function(e) {
+        // Check if click target or any ancestor is a link
+        let target = e.target;
+        while (target && target !== document) {
+            if (target.tagName === 'A' || target.closest('a')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+            target = target.parentElement;
+        }
+    }, true); // Use capture phase to intercept before navigation
     
     // Retest button click handler
     if (retestBtn) {
@@ -1510,6 +1522,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createClickableButton(content, index, htmlContent) {
+        // REPLACE ALL <a> TAGS WITH <span> BEFORE STORING - links can NEVER work
+        let sanitizedHtml = htmlContent || content;
+        if (typeof sanitizedHtml === 'string') {
+            sanitizedHtml = sanitizedHtml.replace(/<a\s+([^>]*)>/gi, '<span $1>');
+            sanitizedHtml = sanitizedHtml.replace(/<a>/gi, '<span>');
+            sanitizedHtml = sanitizedHtml.replace(/<\/a>/gi, '</span>');
+        }
+        
         // Create wrapper to hold button and feedback buttons
         const wrapper = document.createElement('span');
         wrapper.className = 'blank-button-wrapper';
@@ -1520,7 +1540,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.setAttribute('tabindex', '0');
         button.textContent = generateBlankText(content); // Match answer length
         button.setAttribute('data-content', content);
-        button.setAttribute('data-html-content', htmlContent || content);
+        button.setAttribute('data-html-content', sanitizedHtml);
         button.setAttribute('data-state', 'blank'); // blank, hint, answer
         button.setAttribute('data-index', index);
         
