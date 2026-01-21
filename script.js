@@ -1743,6 +1743,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 wrapper.classList.remove('show-feedback');
                 // Don't remove correct-answer or wrong-answer classes - keep the background color
                 // Links are not present when showing blank text (textContent clears innerHTML)
+                // But ensure any popup is hidden
+                if (button._linkPopup) {
+                    button._linkPopup.style.display = 'none';
+                }
             }
             
             // Update blank counter
