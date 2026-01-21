@@ -1686,51 +1686,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                // Handle links: disable direct navigation but show popup on hover
+                // Handle links: disable direct navigation but show popup on hover over button text
                 setTimeout(() => {
                     const links = button.querySelectorAll('a');
+                    if (links.length === 0) return;
+                    
+                    // Get all hrefs from links in this button
+                    const hrefs = [];
                     links.forEach(link => {
-                        // Get the original href
                         let originalHref = link.getAttribute('href') || link.getAttribute('data-stored-href');
-                        if (!originalHref) return;
-                        
-                        // Store href
-                        if (!link.getAttribute('data-stored-href')) {
-                            link.setAttribute('data-stored-href', originalHref);
+                        if (originalHref) {
+                            if (!link.getAttribute('data-stored-href')) {
+                                link.setAttribute('data-stored-href', originalHref);
+                            }
+                            hrefs.push(originalHref);
+                            // Remove href and disable link
+                            link.removeAttribute('href');
+                            link.style.pointerEvents = 'none';
+                            link.style.cursor = 'default';
+                            link.onclick = function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return false;
+                            };
                         }
-                        
-                        // Remove href - links are NOT clickable, only hover shows popup
-                        link.removeAttribute('href');
-                        link.style.pointerEvents = 'auto';
-                        link.style.cursor = 'pointer';
-                        link.style.textDecoration = 'underline';
-                        
-                        // Prevent link click
-                        link.onclick = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            e.stopImmediatePropagation();
-                            return false;
-                        };
-                        
-                        // Create popup
+                    });
+                    
+                    // If there are links, create one popup for the button and show it on hover
+                    if (hrefs.length > 0) {
                         const popup = document.createElement('div');
                         popup.style.cssText = 'position: fixed; background: white; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 100000; display: none; white-space: nowrap; font-size: 12px; color: #0066cc; text-decoration: underline; cursor: pointer;';
-                        popup.textContent = originalHref;
+                        // Show first link URL (or combine if multiple)
+                        popup.textContent = hrefs[0];
                         document.body.appendChild(popup);
                         
-                        // Show popup on hover
-                        link.addEventListener('mouseenter', function() {
-                            const rect = link.getBoundingClientRect();
+                        // Show popup when hovering over the button (where link text is)
+                        button.addEventListener('mouseenter', function() {
+                            const rect = button.getBoundingClientRect();
                             popup.style.display = 'block';
                             popup.style.left = rect.left + 'px';
                             popup.style.top = (rect.bottom + 5) + 'px';
                         });
                         
-                        // Hide popup when leaving link
-                        link.addEventListener('mouseleave', function() {
+                        // Hide popup when leaving button
+                        button.addEventListener('mouseleave', function() {
                             setTimeout(() => {
-                                if (document.activeElement !== popup && !popup.matches(':hover')) {
+                                if (!popup.matches(':hover')) {
                                     popup.style.display = 'none';
                                 }
                             }, 100);
@@ -1750,13 +1751,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         popup.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            window.open(originalHref, '_blank');
+                            window.open(hrefs[0], '_blank');
                             popup.style.display = 'none';
                         });
                         
                         // Store popup reference
-                        link._popup = popup;
-                    });
+                        button._linkPopup = popup;
+                    }
                 }, 0);
             } else {
                 // Reset to blank (but keep feedback color)
