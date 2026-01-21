@@ -1582,14 +1582,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let clickCount = 0;
         
         function handleButtonClick(e) {
-            // Prevent any link navigation during button state changes
-            if (e && e.target && e.target.tagName === 'A') {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return false;
-            }
-            
             clickCount++;
             const state = clickCount % 3;
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
