@@ -36,18 +36,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // GLOBAL: Disable ALL links everywhere - prevent any link navigation
+    // Only prevent if we actually find an <a> tag (shouldn't exist after replacement, but safety check)
     document.addEventListener('click', function(e) {
-        // Check if click target or any ancestor is a link
-        let target = e.target;
-        while (target && target !== document) {
-            if (target.tagName === 'A' || target.closest('a')) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return false;
-            }
-            target = target.parentElement;
+        // Don't interfere with button clicks - only block actual <a> tags
+        if (e.target.tagName === 'A' || e.target.closest('a')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
         }
+        // Don't stop propagation for anything else - let buttons work normally
     }, true); // Use capture phase to intercept before navigation
     
     // Retest button click handler
