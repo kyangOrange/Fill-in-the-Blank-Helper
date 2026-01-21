@@ -1684,21 +1684,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                // Enable links when showing full answer
+                // Handle links: disable direct navigation but show popup on hover
                 const links = button.querySelectorAll('a');
                 links.forEach(link => {
-                    // Remove any stored href and restore original href
-                    const storedHref = link.getAttribute('data-stored-href');
-                    if (storedHref) {
-                        link.setAttribute('href', storedHref);
-                        link.removeAttribute('data-stored-href');
+                    // Store the original href if not already stored
+                    const originalHref = link.getAttribute('href') || link.getAttribute('data-stored-href');
+                    if (originalHref && !link.getAttribute('data-stored-href')) {
+                        link.setAttribute('data-stored-href', originalHref);
                     }
-                    // Enable pointer events and remove tabindex
+                    // Remove href to prevent direct navigation
+                    link.removeAttribute('href');
                     link.style.pointerEvents = 'auto';
-                    link.removeAttribute('tabindex');
-                    // Clone the link to remove all event listeners that might prevent navigation
-                    const newLink = link.cloneNode(true);
-                    link.parentNode.replaceChild(newLink, link);
+                    link.style.textDecoration = 'underline';
+                    link.style.cursor = 'pointer';
+                    link.setAttribute('tabindex', '0');
+                    
+                    // Create popup element
+                    const popup = document.createElement('div');
+                    popup.className = 'link-popup';
+                    popup.style.cssText = 'position: absolute; background: white; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10000; display: none; white-space: nowrap; font-size: 12px; color: #0066cc; text-decoration: underline; cursor: pointer;';
+                    popup.textContent = originalHref || link.getAttribute('data-stored-href') || '#';
+                    popup.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const href = link.getAttribute('data-stored-href');
+                        if (href) {
+                            window.open(href, '_blank');
+                        }
+                    });
+                    document.body.appendChild(popup);
+                    
+                    // Show popup on hover
+                    link.addEventListener('mouseenter', function(e) {
+                        e.stopPropagation();
+                        const rect = link.getBoundingClientRect();
+                        popup.style.display = 'block';
+                        popup.style.left = rect.left + 'px';
+                        popup.style.top = (rect.bottom + 5) + 'px';
+                    });
+                    
+                    link.addEventListener('mouseleave', function(e) {
+                        e.stopPropagation();
+                        popup.style.display = 'none';
+                    });
+                    
+                    // Hide popup when mouse leaves the popup too
+                    popup.addEventListener('mouseleave', function() {
+                        popup.style.display = 'none';
+                    });
                 });
             } else {
                 // Reset to blank (but keep feedback color)
