@@ -1652,25 +1652,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
-                // REPLACE ALL <a> TAGS WITH <span> - links can NEVER work
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = hintWithPadding;
-                const links = tempDiv.querySelectorAll('a');
-                links.forEach(link => {
-                    // Replace <a> with <span> - preserve all attributes except href
-                    const span = document.createElement('span');
-                    Array.from(link.attributes).forEach(attr => {
-                        if (attr.name !== 'href') {
-                            span.setAttribute(attr.name, attr.value);
-                        }
-                    });
-                    // Copy all children
-                    while (link.firstChild) {
-                        span.appendChild(link.firstChild);
-                    }
-                    link.parentNode.replaceChild(span, link);
-                });
-                button.innerHTML = tempDiv.innerHTML;
+                // REPLACE ALL <a> TAGS WITH <span> IN HTML STRING - links can NEVER work
+                let htmlWithoutLinks = hintWithPadding;
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<a([^>]*)>/gi, '<span$1>');
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
+                button.innerHTML = htmlWithoutLinks;
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 const sanitizedHtml = convertBlockToInline(storedHtmlContent);
