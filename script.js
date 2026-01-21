@@ -1680,59 +1680,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                // Handle links: disable direct navigation, show popup on hover in answer state
-                setTimeout(() => {
-                    const links = button.querySelectorAll('a');
-                    if (links.length === 0) return;
-                    
-                    // Get first link URL
+                
+                // IMMEDIATELY disable all links after setting innerHTML
+                const links = button.querySelectorAll('a');
+                if (links.length > 0) {
+                    // Get first link URL and disable ALL links
                     let linkUrl = null;
                     links.forEach(link => {
-                        if (!linkUrl) {
-                            linkUrl = link.getAttribute('href') || link.getAttribute('data-stored-href');
-                            if (linkUrl && !link.getAttribute('data-stored-href')) {
-                                link.setAttribute('data-stored-href', linkUrl);
-                            }
+                        // Get href first
+                        let href = link.getAttribute('href') || link.getAttribute('data-stored-href');
+                        if (!linkUrl && href) {
+                            linkUrl = href;
                         }
-                        // Disable link completely
+                        if (href && !link.getAttribute('data-stored-href')) {
+                            link.setAttribute('data-stored-href', href);
+                        }
+                        // IMMEDIATELY disable - remove href, disable pointer events, prevent clicks
                         link.removeAttribute('href');
                         link.style.pointerEvents = 'none';
                         link.style.cursor = 'default';
+                        link.style.textDecoration = 'none';
+                        // Prevent all click events
                         link.onclick = function(e) {
                             e.preventDefault();
                             e.stopPropagation();
+                            e.stopImmediatePropagation();
                             return false;
                         };
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            return false;
+                        }, true);
                     });
                     
-                    if (!linkUrl) return;
-                    
-                    // Create popup
-                    const popup = document.createElement('div');
-                    popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
-                    popup.textContent = linkUrl;
-                    document.body.appendChild(popup);
-                    
-                    // Show popup on hover in answer state only
-                    wrapper.addEventListener('mouseenter', function() {
-                        if (button.getAttribute('data-state') === 'answer') {
-                            const rect = button.getBoundingClientRect();
-                            popup.style.display = 'block';
-                            popup.style.left = rect.left + 'px';
-                            popup.style.top = (rect.bottom + 10) + 'px';
+                    // Create popup if we have a link
+                    if (linkUrl) {
+                        // Remove existing popup if any
+                        if (button._linkPopup && button._linkPopup.parentNode) {
+                            button._linkPopup.parentNode.removeChild(button._linkPopup);
                         }
-                    });
-                    
-                    wrapper.addEventListener('mouseleave', function() {
-                        popup.style.display = 'none';
-                    });
-                    
-                    popup.addEventListener('click', function() {
-                        window.open(linkUrl, '_blank');
-                    });
-                    
-                    button._linkPopup = popup;
-                }, 50);
+                        
+                        const popup = document.createElement('div');
+                        popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
+                        popup.textContent = linkUrl;
+                        document.body.appendChild(popup);
+                        
+                        // Show popup on hover in answer state only
+                        wrapper.addEventListener('mouseenter', function() {
+                            if (button.getAttribute('data-state') === 'answer') {
+                                const rect = button.getBoundingClientRect();
+                                popup.style.display = 'block';
+                                popup.style.left = rect.left + 'px';
+                                popup.style.top = (rect.bottom + 10) + 'px';
+                            }
+                        });
+                        
+                        wrapper.addEventListener('mouseleave', function() {
+                            popup.style.display = 'none';
+                        });
+                        
+                        popup.addEventListener('click', function() {
+                            window.open(linkUrl, '_blank');
+                            popup.style.display = 'none';
+                        });
+                        
+                        button._linkPopup = popup;
+                    }
+                }
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
