@@ -1688,8 +1688,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                // Handle links: disable direct navigation but show link URL on hover via title attribute
-                // When user clicks the link tooltip area, open it
+                // Handle links: disable direct navigation, show popup on hover in answer state
                 setTimeout(() => {
                     const links = button.querySelectorAll('a');
                     if (links.length === 0) return;
@@ -1716,40 +1715,50 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     
-                    // If there are links, set title attribute on button to show link URL on hover
-                    // And make button clickable to open link when hovering over the link text area
                     if (hrefs.length > 0) {
                         const linkUrl = hrefs[0];
-                        button.setAttribute('title', 'Click to open: ' + linkUrl);
-                        button.style.cursor = 'pointer';
                         
-                        // Track if mouse is over button
-                        let isHovering = false;
-                        let linkClickHandler = null;
+                        // Create popup element
+                        const popup = document.createElement('div');
+                        popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
+                        popup.textContent = linkUrl;
+                        popup.id = 'link-popup-' + button.getAttribute('data-index');
+                        document.body.appendChild(popup);
                         
-                        const enableLinkClick = function() {
-                            if (!linkClickHandler) {
-                                linkClickHandler = function(e) {
-                                    // Only open link if we're hovering over the button
-                                    if (isHovering && button.getAttribute('data-state') === 'answer') {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        window.open(linkUrl, '_blank');
-                                        return false;
-                                    }
-                                };
-                                button.addEventListener('click', linkClickHandler, false);
+                        // Show popup on hover
+                        const showPopup = function() {
+                            if (button.getAttribute('data-state') === 'answer') {
+                                const rect = button.getBoundingClientRect();
+                                popup.style.display = 'block';
+                                popup.style.left = rect.left + 'px';
+                                popup.style.top = (rect.bottom + 10) + 'px';
                             }
                         };
                         
-                        button.addEventListener('mouseenter', function() {
-                            isHovering = true;
-                            enableLinkClick();
-                        }, false);
+                        // Hide popup
+                        const hidePopup = function() {
+                            popup.style.display = 'none';
+                        };
                         
-                        button.addEventListener('mouseleave', function() {
-                            isHovering = false;
-                        }, false);
+                        // Attach to wrapper so it works even when hovering anywhere on button
+                        wrapper.addEventListener('mouseenter', showPopup);
+                        wrapper.addEventListener('mouseleave', hidePopup);
+                        
+                        // Keep visible when hovering popup
+                        popup.addEventListener('mouseenter', function() {
+                            popup.style.display = 'block';
+                        });
+                        popup.addEventListener('mouseleave', hidePopup);
+                        
+                        // Click popup to open
+                        popup.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(linkUrl, '_blank');
+                            popup.style.display = 'none';
+                        });
+                        
+                        button._linkPopup = popup;
                     }
                 }, 100);
             } else {
