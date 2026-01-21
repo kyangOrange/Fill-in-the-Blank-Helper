@@ -1685,54 +1685,88 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
                 // Handle links: disable direct navigation but show popup on hover
-                const links = button.querySelectorAll('a');
-                links.forEach(link => {
-                    // Store the original href if not already stored
-                    const originalHref = link.getAttribute('href') || link.getAttribute('data-stored-href');
-                    if (originalHref && !link.getAttribute('data-stored-href')) {
-                        link.setAttribute('data-stored-href', originalHref);
-                    }
-                    // Remove href to prevent direct navigation
-                    link.removeAttribute('href');
-                    link.style.pointerEvents = 'auto';
-                    link.style.textDecoration = 'underline';
-                    link.style.cursor = 'pointer';
-                    link.setAttribute('tabindex', '0');
-                    
-                    // Create popup element
-                    const popup = document.createElement('div');
-                    popup.className = 'link-popup';
-                    popup.style.cssText = 'position: absolute; background: white; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 10000; display: none; white-space: nowrap; font-size: 12px; color: #0066cc; text-decoration: underline; cursor: pointer;';
-                    popup.textContent = originalHref || link.getAttribute('data-stored-href') || '#';
-                    popup.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const href = link.getAttribute('data-stored-href');
-                        if (href) {
-                            window.open(href, '_blank');
+                // Use setTimeout to ensure DOM is ready
+                setTimeout(() => {
+                    const links = button.querySelectorAll('a');
+                    links.forEach(link => {
+                        // Get the original href from the HTML content
+                        let originalHref = link.getAttribute('href');
+                        if (!originalHref) {
+                            // Try to get it from data-stored-href if already stored
+                            originalHref = link.getAttribute('data-stored-href');
                         }
+                        
+                        if (!originalHref) {
+                            // No href found, skip this link
+                            return;
+                        }
+                        
+                        // Store the href
+                        if (!link.getAttribute('data-stored-href')) {
+                            link.setAttribute('data-stored-href', originalHref);
+                        }
+                        
+                        // Remove href to prevent direct navigation
+                        link.removeAttribute('href');
+                        link.style.pointerEvents = 'auto';
+                        link.style.textDecoration = 'underline';
+                        link.style.cursor = 'pointer';
+                        link.setAttribute('tabindex', '0');
+                        
+                        // Create popup element
+                        const popup = document.createElement('div');
+                        popup.className = 'link-popup';
+                        popup.style.cssText = 'position: fixed; background: white; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 100000; display: none; white-space: nowrap; font-size: 12px; color: #0066cc; text-decoration: underline; cursor: pointer; pointer-events: auto;';
+                        popup.textContent = originalHref;
+                        popup.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            const href = link.getAttribute('data-stored-href');
+                            if (href) {
+                                window.open(href, '_blank');
+                            }
+                            popup.style.display = 'none';
+                            return false;
+                        });
+                        document.body.appendChild(popup);
+                        
+                        // Store popup reference on the link
+                        link.setAttribute('data-popup-element', 'true');
+                        link._popup = popup;
+                        
+                        // Show popup on hover
+                        link.addEventListener('mouseenter', function(e) {
+                            e.stopPropagation();
+                            const rect = link.getBoundingClientRect();
+                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                            popup.style.display = 'block';
+                            popup.style.left = (rect.left + scrollLeft) + 'px';
+                            popup.style.top = (rect.bottom + scrollTop + 5) + 'px';
+                        }, false);
+                        
+                        link.addEventListener('mouseleave', function(e) {
+                            e.stopPropagation();
+                            // Small delay to allow moving to popup
+                            setTimeout(() => {
+                                if (!popup.matches(':hover')) {
+                                    popup.style.display = 'none';
+                                }
+                            }, 100);
+                        }, false);
+                        
+                        // Keep popup visible when hovering over it
+                        popup.addEventListener('mouseenter', function() {
+                            popup.style.display = 'block';
+                        }, false);
+                        
+                        // Hide popup when mouse leaves the popup
+                        popup.addEventListener('mouseleave', function() {
+                            popup.style.display = 'none';
+                        }, false);
                     });
-                    document.body.appendChild(popup);
-                    
-                    // Show popup on hover
-                    link.addEventListener('mouseenter', function(e) {
-                        e.stopPropagation();
-                        const rect = link.getBoundingClientRect();
-                        popup.style.display = 'block';
-                        popup.style.left = rect.left + 'px';
-                        popup.style.top = (rect.bottom + 5) + 'px';
-                    });
-                    
-                    link.addEventListener('mouseleave', function(e) {
-                        e.stopPropagation();
-                        popup.style.display = 'none';
-                    });
-                    
-                    // Hide popup when mouse leaves the popup too
-                    popup.addEventListener('mouseleave', function() {
-                        popup.style.display = 'none';
-                    });
-                });
+                }, 10);
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
