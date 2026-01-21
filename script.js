@@ -36,25 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Disable links in blank buttons unless answer is fully displayed
-    if (output) {
-        output.addEventListener('click', function(e) {
-            // Check if the clicked element is a link or is inside a link
-            const link = e.target.closest('a');
-            if (link) {
-                // Check if the link is inside a blank-button
-                const button = link.closest('.blank-button');
-                if (button) {
-                    const state = button.getAttribute('data-state');
-                    // Only allow links to work if the button is in 'answer' state
-                    if (state !== 'answer') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    }
-                }
-            }
-        }, true); // Use capture phase to intercept before link navigation
-    }
+    // This is handled in handleButtonClick by setting pointer-events on links
     
     // Retest button click handler
     if (retestBtn) {
@@ -1670,6 +1652,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
+                // Disable links when showing hint
+                const links = button.querySelectorAll('a');
+                links.forEach(link => {
+                    link.style.pointerEvents = 'none';
+                    link.setAttribute('tabindex', '-1');
+                });
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 const sanitizedHtml = convertBlockToInline(storedHtmlContent);
@@ -1679,6 +1667,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
+                // Enable links when showing full answer
+                const links = button.querySelectorAll('a');
+                links.forEach(link => {
+                    link.style.pointerEvents = 'auto';
+                    link.removeAttribute('tabindex');
+                });
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
@@ -1688,6 +1682,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
                 // Don't remove correct-answer or wrong-answer classes - keep the background color
+                // Links are not present when showing blank text (textContent clears innerHTML)
             }
             
             // Update blank counter
