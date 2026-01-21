@@ -35,6 +35,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Disable links in blank buttons unless answer is fully displayed
+    if (output) {
+        output.addEventListener('click', function(e) {
+            // Check if the clicked element is a link or is inside a link
+            const link = e.target.closest('a');
+            if (link) {
+                // Check if the link is inside a blank-button
+                const button = link.closest('.blank-button');
+                if (button) {
+                    const state = button.getAttribute('data-state');
+                    // Only allow links to work if the button is in 'answer' state
+                    if (state !== 'answer') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }
+            }
+        }, true); // Use capture phase to intercept before link navigation
+    }
+    
     // Retest button click handler
     if (retestBtn) {
         retestBtn.addEventListener('click', function() {
