@@ -1715,48 +1715,68 @@ document.addEventListener('DOMContentLoaded', function() {
                     // If there are links, create one popup for the button and show it on hover
                     if (hrefs.length > 0) {
                         const popup = document.createElement('div');
-                        popup.style.cssText = 'position: fixed; background: white; border: 1px solid #ccc; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 100000; display: none; white-space: nowrap; font-size: 12px; color: #0066cc; text-decoration: underline; cursor: pointer;';
+                        popup.style.cssText = 'position: fixed; background: white; border: 2px solid #0066cc; padding: 10px 15px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999999; display: none; white-space: nowrap; font-size: 13px; color: #0066cc; text-decoration: underline; cursor: pointer; font-weight: bold; pointer-events: auto;';
                         // Show first link URL (or combine if multiple)
                         popup.textContent = hrefs[0];
                         document.body.appendChild(popup);
                         
-                        // Show popup when hovering over the button (where link text is)
-                        button.addEventListener('mouseenter', function() {
+                        // Function to show popup with proper positioning
+                        const showPopup = function() {
                             const rect = button.getBoundingClientRect();
+                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
                             popup.style.display = 'block';
-                            popup.style.left = rect.left + 'px';
-                            popup.style.top = (rect.bottom + 5) + 'px';
-                        });
+                            popup.style.left = (rect.left + scrollLeft) + 'px';
+                            popup.style.top = (rect.bottom + scrollTop + 8) + 'px';
+                            popup.style.zIndex = '999999';
+                        };
                         
-                        // Hide popup when leaving button
-                        button.addEventListener('mouseleave', function() {
+                        // Function to hide popup
+                        const hidePopup = function() {
                             setTimeout(() => {
-                                if (!popup.matches(':hover')) {
+                                if (document.activeElement !== popup && !popup.matches(':hover')) {
                                     popup.style.display = 'none';
                                 }
-                            }, 100);
-                        });
+                            }, 150);
+                        };
+                        
+                        // Show popup when hovering over the button (where link text is)
+                        button.addEventListener('mouseenter', showPopup, false);
+                        button.addEventListener('mouseover', showPopup, false);
+                        
+                        // Hide popup when leaving button
+                        button.addEventListener('mouseleave', hidePopup, false);
+                        button.addEventListener('mouseout', hidePopup, false);
                         
                         // Keep popup visible when hovering it
                         popup.addEventListener('mouseenter', function() {
                             popup.style.display = 'block';
-                        });
+                        }, false);
                         
                         // Hide popup when leaving it
                         popup.addEventListener('mouseleave', function() {
                             popup.style.display = 'none';
-                        });
+                        }, false);
                         
                         // Click popup to open link
                         popup.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
+                            e.stopImmediatePropagation();
                             window.open(hrefs[0], '_blank');
                             popup.style.display = 'none';
-                        });
+                            return false;
+                        }, false);
                         
                         // Store popup reference
                         button._linkPopup = popup;
+                        
+                        // Make popup more visible
+                        popup.style.border = '2px solid #0066cc';
+                        popup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                        popup.style.fontWeight = 'bold';
+                        popup.style.fontSize = '13px';
+                        popup.style.padding = '10px 15px';
                     }
                 }, 0);
             } else {
