@@ -1688,8 +1688,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                // Handle links: disable direct navigation but show popup on hover over button text
-                // Use setTimeout to ensure DOM is ready and state is set
+                // Handle links: disable direct navigation but show link URL on hover via title attribute
+                // When user clicks the link tooltip area, open it
                 setTimeout(() => {
                     const links = button.querySelectorAll('a');
                     if (links.length === 0) return;
@@ -1716,66 +1716,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     
-                    // If there are links, create one popup for the button
+                    // If there are links, set title attribute on button to show link URL on hover
+                    // And make button clickable to open link when hovering over the link text area
                     if (hrefs.length > 0) {
-                        // Remove existing popup if any
-                        if (button._linkPopup && button._linkPopup.parentNode) {
-                            button._linkPopup.parentNode.removeChild(button._linkPopup);
-                        }
+                        const linkUrl = hrefs[0];
+                        button.setAttribute('title', 'Click to open: ' + linkUrl);
+                        button.style.cursor = 'pointer';
                         
-                        const popup = document.createElement('div');
-                        popup.id = 'link-popup-' + Date.now();
-                        popup.style.cssText = 'position: fixed; background: #ffff00 !important; border: 4px solid #ff0000 !important; padding: 15px 20px !important; border-radius: 8px !important; box-shadow: 0 6px 20px rgba(255,0,0,0.6) !important; z-index: 999999 !important; display: none; white-space: nowrap; font-size: 16px !important; color: #000000 !important; text-decoration: underline !important; cursor: pointer !important; font-weight: bold !important; pointer-events: auto !important;';
-                        // Show first link URL
-                        popup.textContent = hrefs[0];
-                        document.body.appendChild(popup);
+                        // Track if mouse is over button
+                        let isHovering = false;
+                        let linkClickHandler = null;
                         
-                        // Function to show popup
-                        const showPopup = function(e) {
-                            const rect = button.getBoundingClientRect();
-                            popup.style.display = 'block';
-                            popup.style.left = rect.left + 'px';
-                            popup.style.top = (rect.bottom + 15) + 'px';
-                            popup.style.zIndex = '999999';
+                        const enableLinkClick = function() {
+                            if (!linkClickHandler) {
+                                linkClickHandler = function(e) {
+                                    // Only open link if we're hovering over the button
+                                    if (isHovering && button.getAttribute('data-state') === 'answer') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        window.open(linkUrl, '_blank');
+                                        return false;
+                                    }
+                                };
+                                button.addEventListener('click', linkClickHandler, false);
+                            }
                         };
                         
-                        // Function to hide popup
-                        const hidePopup = function(e) {
-                            setTimeout(() => {
-                                popup.style.display = 'none';
-                            }, 300);
-                        };
+                        button.addEventListener('mouseenter', function() {
+                            isHovering = true;
+                            enableLinkClick();
+                        }, false);
                         
-                        // Attach hover events - don't use capture, use bubble phase and make sure button is ready
-                        wrapper.addEventListener('mouseenter', showPopup);
-                        button.addEventListener('mouseenter', showPopup);
-                        wrapper.addEventListener('mouseleave', hidePopup);
-                        button.addEventListener('mouseleave', hidePopup);
-                        
-                        // Keep popup visible when hovering it
-                        popup.addEventListener('mouseenter', function() {
-                            popup.style.display = 'block';
-                        });
-                        
-                        // Hide popup when leaving it
-                        popup.addEventListener('mouseleave', function() {
-                            popup.style.display = 'none';
-                        });
-                        
-                        // Click popup to open link
-                        popup.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.open(hrefs[0], '_blank');
-                            popup.style.display = 'none';
-                            return false;
-                        });
-                        
-                        // Store popup reference
-                        button._linkPopup = popup;
-                        wrapper._linkPopup = popup;
+                        button.addEventListener('mouseleave', function() {
+                            isHovering = false;
+                        }, false);
                     }
-                }, 50);
+                }, 100);
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
