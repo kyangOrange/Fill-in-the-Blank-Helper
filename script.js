@@ -1583,9 +1583,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function handleButtonClick(e) {
             // Prevent any link navigation during button state changes
-            if (e) {
+            if (e && e.target && e.target.tagName === 'A') {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
             }
             
             clickCount++;
@@ -1687,7 +1689,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
                 // Handle links: disable direct navigation but show popup on hover over button text
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     const links = button.querySelectorAll('a');
                     if (links.length === 0) return;
                     
@@ -1700,13 +1702,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 link.setAttribute('data-stored-href', originalHref);
                             }
                             hrefs.push(originalHref);
-                            // Remove href and disable link
+                            // Remove href and disable link completely
                             link.removeAttribute('href');
                             link.style.pointerEvents = 'none';
                             link.style.cursor = 'default';
                             link.onclick = function(e) {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                e.stopImmediatePropagation();
                                 return false;
                             };
                         }
@@ -1714,49 +1717,58 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // If there are links, create one popup for the button and show it on hover
                     if (hrefs.length > 0) {
+                        // Remove existing popup if any
+                        if (button._linkPopup && button._linkPopup.parentNode) {
+                            button._linkPopup.parentNode.removeChild(button._linkPopup);
+                        }
+                        
                         const popup = document.createElement('div');
-                        popup.style.cssText = 'position: fixed; background: white; border: 2px solid #0066cc; padding: 10px 15px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999999; display: none; white-space: nowrap; font-size: 13px; color: #0066cc; text-decoration: underline; cursor: pointer; font-weight: bold; pointer-events: auto;';
+                        popup.id = 'link-popup-' + Date.now();
+                        popup.style.cssText = 'position: fixed; background: #ffffcc; border: 3px solid #ff6600; padding: 12px 18px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.4); z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #0066cc; text-decoration: underline; cursor: pointer; font-weight: bold; pointer-events: auto;';
                         // Show first link URL (or combine if multiple)
                         popup.textContent = hrefs[0];
                         document.body.appendChild(popup);
                         
                         // Function to show popup with proper positioning
-                        const showPopup = function() {
+                        const showPopup = function(e) {
+                            if (e) {
+                                e.stopPropagation();
+                            }
                             const rect = button.getBoundingClientRect();
-                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
                             popup.style.display = 'block';
-                            popup.style.left = (rect.left + scrollLeft) + 'px';
-                            popup.style.top = (rect.bottom + scrollTop + 8) + 'px';
+                            popup.style.left = rect.left + 'px';
+                            popup.style.top = (rect.bottom + 10) + 'px';
                             popup.style.zIndex = '999999';
                         };
                         
                         // Function to hide popup
-                        const hidePopup = function() {
+                        const hidePopup = function(e) {
+                            if (e) {
+                                e.stopPropagation();
+                            }
                             setTimeout(() => {
-                                if (document.activeElement !== popup && !popup.matches(':hover')) {
-                                    popup.style.display = 'none';
-                                }
-                            }, 150);
+                                popup.style.display = 'none';
+                            }, 200);
                         };
                         
-                        // Show popup when hovering over the button (where link text is)
-                        button.addEventListener('mouseenter', showPopup, false);
-                        button.addEventListener('mouseover', showPopup, false);
+                        // Show popup when hovering over the button
+                        button.addEventListener('mouseenter', showPopup, true);
+                        button.addEventListener('mouseover', showPopup, true);
                         
                         // Hide popup when leaving button
-                        button.addEventListener('mouseleave', hidePopup, false);
-                        button.addEventListener('mouseout', hidePopup, false);
+                        button.addEventListener('mouseleave', hidePopup, true);
                         
                         // Keep popup visible when hovering it
-                        popup.addEventListener('mouseenter', function() {
+                        popup.addEventListener('mouseenter', function(e) {
+                            e.stopPropagation();
                             popup.style.display = 'block';
-                        }, false);
+                        }, true);
                         
                         // Hide popup when leaving it
-                        popup.addEventListener('mouseleave', function() {
+                        popup.addEventListener('mouseleave', function(e) {
+                            e.stopPropagation();
                             popup.style.display = 'none';
-                        }, false);
+                        }, true);
                         
                         // Click popup to open link
                         popup.addEventListener('click', function(e) {
@@ -1766,19 +1778,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             window.open(hrefs[0], '_blank');
                             popup.style.display = 'none';
                             return false;
-                        }, false);
+                        }, true);
                         
                         // Store popup reference
                         button._linkPopup = popup;
-                        
-                        // Make popup more visible
-                        popup.style.border = '2px solid #0066cc';
-                        popup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-                        popup.style.fontWeight = 'bold';
-                        popup.style.fontSize = '13px';
-                        popup.style.padding = '10px 15px';
                     }
-                }, 0);
+                });
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
