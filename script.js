@@ -35,19 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // GLOBAL: Disable ALL links everywhere - prevent any link navigation
-    // Only prevent if we actually find an <a> tag (shouldn't exist after replacement, but safety check)
-    document.addEventListener('click', function(e) {
-        // Don't interfere with button clicks - only block actual <a> tags
-        if (e.target.tagName === 'A' || e.target.closest('a')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }
-        // Don't stop propagation for anything else - let buttons work normally
-    }, true); // Use capture phase to intercept before navigation
-    
     // Retest button click handler
     if (retestBtn) {
         retestBtn.addEventListener('click', function() {
@@ -1520,14 +1507,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createClickableButton(content, index, htmlContent) {
-        // REPLACE ALL <a> TAGS WITH <span> BEFORE STORING - links can NEVER work
-        let sanitizedHtml = htmlContent || content;
-        if (typeof sanitizedHtml === 'string') {
-            sanitizedHtml = sanitizedHtml.replace(/<a\s+([^>]*)>/gi, '<span $1>');
-            sanitizedHtml = sanitizedHtml.replace(/<a>/gi, '<span>');
-            sanitizedHtml = sanitizedHtml.replace(/<\/a>/gi, '</span>');
-        }
-        
         // Create wrapper to hold button and feedback buttons
         const wrapper = document.createElement('span');
         wrapper.className = 'blank-button-wrapper';
@@ -1538,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.setAttribute('tabindex', '0');
         button.textContent = generateBlankText(content); // Match answer length
         button.setAttribute('data-content', content);
-        button.setAttribute('data-html-content', sanitizedHtml);
+        button.setAttribute('data-html-content', htmlContent || content);
         button.setAttribute('data-state', 'blank'); // blank, hint, answer
         button.setAttribute('data-index', index);
         
@@ -1599,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let clickCount = 0;
         
-        function handleButtonClick(e) {
+        function handleButtonClick() {
             clickCount++;
             const state = clickCount % 3;
             const storedHtmlContent = button.getAttribute('data-html-content') || content;
@@ -1670,71 +1649,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
-                // REPLACE ALL <a> TAGS WITH <span> IN HTML STRING - links can NEVER work
-                let htmlWithoutLinks = hintWithPadding;
-                // Replace all opening <a> tags with <span>
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<a\s+([^>]*)>/gi, '<span $1>');
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<a>/gi, '<span>');
-                // Replace all closing </a> tags with </span>
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
-                button.innerHTML = htmlWithoutLinks;
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 const sanitizedHtml = convertBlockToInline(storedHtmlContent);
-                
-                // REPLACE ALL <a> TAGS WITH <span> - links can NEVER work as spans
-                let htmlWithoutLinks = sanitizedHtml;
-                let linkUrl = null;
-                // Find and extract href from HTML string BEFORE replacing
-                const hrefMatch = sanitizedHtml.match(/<a[^>]*href=["']([^"']+)["'][^>]*>/i);
-                if (hrefMatch) {
-                    linkUrl = hrefMatch[1];
-                }
-                // Replace ALL <a> tags with <span> tags - preserve styling and content
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<a\s+([^>]*)>/gi, '<span $1>');
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<a>/gi, '<span>');
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
-                
-                button.innerHTML = htmlWithoutLinks;
+                button.innerHTML = sanitizedHtml;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                
-                // Create popup if we have a link
-                if (linkUrl) {
-                    // Remove existing popup if any
-                    if (button._linkPopup && button._linkPopup.parentNode) {
-                        button._linkPopup.parentNode.removeChild(button._linkPopup);
-                    }
-                    
-                    const popup = document.createElement('div');
-                    popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
-                    popup.textContent = linkUrl;
-                    document.body.appendChild(popup);
-                    
-                    // Show popup on hover in answer state only
-                    wrapper.addEventListener('mouseenter', function() {
-                        if (button.getAttribute('data-state') === 'answer') {
-                            const rect = button.getBoundingClientRect();
-                            popup.style.display = 'block';
-                            popup.style.left = rect.left + 'px';
-                            popup.style.top = (rect.bottom + 10) + 'px';
-                        }
-                    });
-                    
-                    wrapper.addEventListener('mouseleave', function() {
-                        popup.style.display = 'none';
-                    });
-                    
-                    popup.addEventListener('click', function() {
-                        window.open(linkUrl, '_blank');
-                        popup.style.display = 'none';
-                    });
-                    
-                    button._linkPopup = popup;
-                }
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
@@ -1744,11 +1667,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
                 // Don't remove correct-answer or wrong-answer classes - keep the background color
-                // Links are not present when showing blank text (textContent clears innerHTML)
-                // But ensure any popup is hidden
-                if (button._linkPopup) {
-                    button._linkPopup.style.display = 'none';
-                }
             }
             
             // Update blank counter

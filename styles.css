@@ -726,16 +726,3 @@ footer p.privacy-note {
         font-size: 1.75rem;
     }
 }
-
-/* COMPLETELY DISABLE ALL LINKS - they can NEVER work */
-a {
-    pointer-events: none !important;
-    cursor: default !important;
-    text-decoration: none !important;
-}
-
-.output-area a,
-.output-area a * {
-    pointer-events: none !important;
-    cursor: default !important;
-}
