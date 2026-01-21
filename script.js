@@ -1687,14 +1687,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Enable links when showing full answer
                 const links = button.querySelectorAll('a');
                 links.forEach(link => {
-                    link.style.pointerEvents = 'auto';
-                    link.removeAttribute('tabindex');
-                    // Restore href if it was stored
+                    // Remove any stored href and restore original href
                     const storedHref = link.getAttribute('data-stored-href');
                     if (storedHref) {
                         link.setAttribute('href', storedHref);
                         link.removeAttribute('data-stored-href');
                     }
+                    // Enable pointer events and remove tabindex
+                    link.style.pointerEvents = 'auto';
+                    link.removeAttribute('tabindex');
+                    // Clone the link to remove all event listeners that might prevent navigation
+                    const newLink = link.cloneNode(true);
+                    link.parentNode.replaceChild(newLink, link);
                 });
             } else {
                 // Reset to blank (but keep feedback color)
