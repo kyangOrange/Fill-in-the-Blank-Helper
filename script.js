@@ -1694,29 +1694,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
                 
-                // Disable all links in DOM
+                // COMPLETELY DISABLE ALL LINKS - multiple layers of prevention
                 const links = button.querySelectorAll('a');
                 links.forEach(link => {
                     if (linkUrl && !link.getAttribute('data-stored-href')) {
                         link.setAttribute('data-stored-href', linkUrl);
                     }
+                    // Remove href - links can't navigate without it
                     link.removeAttribute('href');
+                    // Disable pointer events - can't click
                     link.style.pointerEvents = 'none';
                     link.style.cursor = 'default';
                     link.style.textDecoration = 'none';
-                    link.onclick = function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.stopImmediatePropagation();
-                        return false;
-                    };
+                    // Prevent all click events - capture phase first
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
                         e.stopImmediatePropagation();
                         return false;
                     }, true);
+                    // Also set onclick
+                    link.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
+                    };
                 });
+                
+                // Also prevent link clicks at button level - stop propagation only for links
+                button.addEventListener('click', function(e) {
+                    if (e.target && (e.target.tagName === 'A' || e.target.closest('a'))) {
+                        e.stopPropagation(); // Stop propagation but don't prevent button handler
+                    }
+                }, true);
                 
                 // Create popup if we have a link
                 if (linkUrl) {
