@@ -1654,7 +1654,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 wrapper.classList.remove('show-feedback');
                 // REPLACE ALL <a> TAGS WITH <span> IN HTML STRING - links can NEVER work
                 let htmlWithoutLinks = hintWithPadding;
-                htmlWithoutLinks = htmlWithoutLinks.replace(/<a([^>]*)>/gi, '<span$1>');
+                // Replace all opening <a> tags with <span>
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<a\s+([^>]*)>/gi, '<span $1>');
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<a>/gi, '<span>');
+                // Replace all closing </a> tags with </span>
                 htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
                 button.innerHTML = htmlWithoutLinks;
             } else if (state === 2) {
@@ -1664,14 +1667,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // REPLACE ALL <a> TAGS WITH <span> - links can NEVER work as spans
                 let htmlWithoutLinks = sanitizedHtml;
                 let linkUrl = null;
-                // Find and extract href from HTML string
+                // Find and extract href from HTML string BEFORE replacing
                 const hrefMatch = sanitizedHtml.match(/<a[^>]*href=["']([^"']+)["'][^>]*>/i);
                 if (hrefMatch) {
                     linkUrl = hrefMatch[1];
-                    // Replace <a> tags with <span> tags - preserve styling and content
-                    htmlWithoutLinks = sanitizedHtml.replace(/<a([^>]*)>/gi, '<span$1>');
-                    htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
                 }
+                // Replace ALL <a> tags with <span> tags - preserve styling and content
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<a\s+([^>]*)>/gi, '<span $1>');
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<a>/gi, '<span>');
+                htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
                 
                 button.innerHTML = htmlWithoutLinks;
                 button.setAttribute('data-state', 'answer');
