@@ -1693,74 +1693,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     const links = button.querySelectorAll('a');
                     if (links.length === 0) return;
                     
-                    // Get all hrefs from links in this button
-                    const hrefs = [];
+                    // Get first link URL
+                    let linkUrl = null;
                     links.forEach(link => {
-                        let originalHref = link.getAttribute('href') || link.getAttribute('data-stored-href');
-                        if (originalHref) {
-                            if (!link.getAttribute('data-stored-href')) {
-                                link.setAttribute('data-stored-href', originalHref);
+                        if (!linkUrl) {
+                            linkUrl = link.getAttribute('href') || link.getAttribute('data-stored-href');
+                            if (linkUrl && !link.getAttribute('data-stored-href')) {
+                                link.setAttribute('data-stored-href', linkUrl);
                             }
-                            hrefs.push(originalHref);
-                            // Remove href and disable link completely
-                            link.removeAttribute('href');
-                            link.style.pointerEvents = 'none';
-                            link.style.cursor = 'default';
-                            link.onclick = function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                e.stopImmediatePropagation();
-                                return false;
-                            };
+                        }
+                        // Disable link completely
+                        link.removeAttribute('href');
+                        link.style.pointerEvents = 'none';
+                        link.style.cursor = 'default';
+                        link.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        };
+                    });
+                    
+                    if (!linkUrl) return;
+                    
+                    // Create popup
+                    const popup = document.createElement('div');
+                    popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
+                    popup.textContent = linkUrl;
+                    document.body.appendChild(popup);
+                    
+                    // Show popup on hover in answer state only
+                    wrapper.addEventListener('mouseenter', function() {
+                        if (button.getAttribute('data-state') === 'answer') {
+                            const rect = button.getBoundingClientRect();
+                            popup.style.display = 'block';
+                            popup.style.left = rect.left + 'px';
+                            popup.style.top = (rect.bottom + 10) + 'px';
                         }
                     });
                     
-                    if (hrefs.length > 0) {
-                        const linkUrl = hrefs[0];
-                        
-                        // Create popup element
-                        const popup = document.createElement('div');
-                        popup.style.cssText = 'position: fixed; background: #ffff00; border: 3px solid #ff0000; padding: 12px 16px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 999999; display: none; white-space: nowrap; font-size: 14px; color: #000; cursor: pointer; font-weight: bold;';
-                        popup.textContent = linkUrl;
-                        popup.id = 'link-popup-' + button.getAttribute('data-index');
-                        document.body.appendChild(popup);
-                        
-                        // Show popup on hover
-                        const showPopup = function() {
-                            if (button.getAttribute('data-state') === 'answer') {
-                                const rect = button.getBoundingClientRect();
-                                popup.style.display = 'block';
-                                popup.style.left = rect.left + 'px';
-                                popup.style.top = (rect.bottom + 10) + 'px';
-                            }
-                        };
-                        
-                        // Hide popup
-                        const hidePopup = function() {
-                            popup.style.display = 'none';
-                        };
-                        
-                        // Attach to wrapper so it works even when hovering anywhere on button
-                        wrapper.addEventListener('mouseenter', showPopup);
-                        wrapper.addEventListener('mouseleave', hidePopup);
-                        
-                        // Keep visible when hovering popup
-                        popup.addEventListener('mouseenter', function() {
-                            popup.style.display = 'block';
-                        });
-                        popup.addEventListener('mouseleave', hidePopup);
-                        
-                        // Click popup to open
-                        popup.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.open(linkUrl, '_blank');
-                            popup.style.display = 'none';
-                        });
-                        
-                        button._linkPopup = popup;
-                    }
-                }, 100);
+                    wrapper.addEventListener('mouseleave', function() {
+                        popup.style.display = 'none';
+                    });
+                    
+                    popup.addEventListener('click', function() {
+                        window.open(linkUrl, '_blank');
+                    });
+                    
+                    button._linkPopup = popup;
+                }, 50);
             } else {
                 // Reset to blank (but keep feedback color)
                 const content = button.getAttribute('data-content') || '';
