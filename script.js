@@ -1652,93 +1652,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.add('hint-state');
                 feedbackContainer.style.display = 'none';
                 wrapper.classList.remove('show-feedback');
-                // COMPLETELY DISABLE links when showing hint
-                const links = button.querySelectorAll('a');
+                // REPLACE ALL <a> TAGS WITH <span> - links can NEVER work
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = hintWithPadding;
+                const links = tempDiv.querySelectorAll('a');
                 links.forEach(link => {
-                    // Store href if not already stored
-                    const href = link.getAttribute('href') || link.getAttribute('data-stored-href');
-                    if (href && !link.getAttribute('data-stored-href')) {
-                        link.setAttribute('data-stored-href', href);
+                    // Replace <a> with <span> - preserve all attributes except href
+                    const span = document.createElement('span');
+                    Array.from(link.attributes).forEach(attr => {
+                        if (attr.name !== 'href') {
+                            span.setAttribute(attr.name, attr.value);
+                        }
+                    });
+                    // Copy all children
+                    while (link.firstChild) {
+                        span.appendChild(link.firstChild);
                     }
-                    // Remove href - links can't work without it
-                    link.removeAttribute('href');
-                    // Disable all interaction
-                    link.style.pointerEvents = 'none';
-                    link.style.cursor = 'default';
-                    link.style.textDecoration = 'none';
-                    link.setAttribute('tabindex', '-1');
-                    // Prevent all clicks - capture phase
-                    link.addEventListener('click', function(linkE) {
-                        linkE.preventDefault();
-                        linkE.stopPropagation();
-                        linkE.stopImmediatePropagation();
-                        return false;
-                    }, true);
-                    // Also set onclick
-                    link.onclick = function(linkE) {
-                        linkE.preventDefault();
-                        linkE.stopPropagation();
-                        linkE.stopImmediatePropagation();
-                        return false;
-                    };
+                    link.parentNode.replaceChild(span, link);
                 });
+                button.innerHTML = tempDiv.innerHTML;
             } else if (state === 2) {
                 // Show full answer with formatting preserved
                 const sanitizedHtml = convertBlockToInline(storedHtmlContent);
                 
-                // Remove href from HTML STRING before setting innerHTML to prevent navigation
-                let htmlWithoutHref = sanitizedHtml;
+                // REPLACE ALL <a> TAGS WITH <span> - links can NEVER work as spans
+                let htmlWithoutLinks = sanitizedHtml;
                 let linkUrl = null;
                 // Find and extract href from HTML string
                 const hrefMatch = sanitizedHtml.match(/<a[^>]*href=["']([^"']+)["'][^>]*>/i);
                 if (hrefMatch) {
                     linkUrl = hrefMatch[1];
-                    // Remove href attribute from all <a> tags in HTML string
-                    htmlWithoutHref = sanitizedHtml.replace(/<a([^>]*)\s+href=["'][^"']+["']([^>]*)>/gi, '<a$1$2>');
-                    htmlWithoutHref = htmlWithoutHref.replace(/<a([^>]*)\s+href=["'][^"']+["']([^>]*?)>/gi, '<a$1$2>');
+                    // Replace <a> tags with <span> tags - preserve styling and content
+                    htmlWithoutLinks = sanitizedHtml.replace(/<a([^>]*)>/gi, '<span$1>');
+                    htmlWithoutLinks = htmlWithoutLinks.replace(/<\/a>/gi, '</span>');
                 }
                 
-                button.innerHTML = htmlWithoutHref;
+                button.innerHTML = htmlWithoutLinks;
                 button.setAttribute('data-state', 'answer');
                 button.classList.remove('hint-state');
                 button.classList.add('answer-state');
                 feedbackContainer.style.display = 'flex';
                 wrapper.classList.add('show-feedback');
-                
-                // COMPLETELY DISABLE ALL LINKS - multiple layers of prevention
-                const links = button.querySelectorAll('a');
-                links.forEach(link => {
-                    if (linkUrl && !link.getAttribute('data-stored-href')) {
-                        link.setAttribute('data-stored-href', linkUrl);
-                    }
-                    // Remove href - links can't navigate without it
-                    link.removeAttribute('href');
-                    // Disable pointer events - can't click
-                    link.style.pointerEvents = 'none';
-                    link.style.cursor = 'default';
-                    link.style.textDecoration = 'none';
-                    // Prevent all click events - capture phase first
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.stopImmediatePropagation();
-                        return false;
-                    }, true);
-                    // Also set onclick
-                    link.onclick = function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.stopImmediatePropagation();
-                        return false;
-                    };
-                });
-                
-                // Also prevent link clicks at button level - stop propagation only for links
-                button.addEventListener('click', function(e) {
-                    if (e.target && (e.target.tagName === 'A' || e.target.closest('a'))) {
-                        e.stopPropagation(); // Stop propagation but don't prevent button handler
-                    }
-                }, true);
                 
                 // Create popup if we have a link
                 if (linkUrl) {
